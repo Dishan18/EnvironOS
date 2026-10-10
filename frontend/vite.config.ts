@@ -12,6 +12,9 @@ export default defineConfig({
   define: {
     global: 'window',
   },
+  build: {
+    assetsDir: '',
+  },
   server: {
     port: 5173,
     host: true,
