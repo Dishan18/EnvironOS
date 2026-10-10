@@ -176,23 +176,23 @@ export const ReportMap: React.FC<ReportMapProps> = ({
       <div className="absolute bottom-4 right-4 z-[1000] bg-white/95 backdrop-blur-md border border-[#E6E8EC] p-3 rounded-xl shadow-sm text-xs space-y-1.5 hidden sm:block">
         <div className="font-semibold text-[#17191C] mb-1 flex items-center gap-1.5 text-[11px] tracking-tight">
           <MapPin className="w-3.5 h-3.5 text-[#157A70]" />
-          <span>Priority Legend (Score 0–100)</span>
+          <span>Priority Legend (Score 0-100)</span>
         </div>
         <div className="flex items-center gap-2 text-[#696F78]">
           <span className="w-2.5 h-2.5 rounded-full bg-[#D9383A]"></span>
-          <span>Critical (75–100)</span>
+          <span>Critical (75-100)</span>
         </div>
         <div className="flex items-center gap-2 text-[#696F78]">
           <span className="w-2.5 h-2.5 rounded-full bg-[#D97706]"></span>
-          <span>High (50–74)</span>
+          <span>High (50-74)</span>
         </div>
         <div className="flex items-center gap-2 text-[#696F78]">
           <span className="w-2.5 h-2.5 rounded-full bg-[#CA8A04]"></span>
-          <span>Moderate (25–49)</span>
+          <span>Moderate (25-49)</span>
         </div>
         <div className="flex items-center gap-2 text-[#696F78]">
           <span className="w-2.5 h-2.5 rounded-full bg-[#16A34A]"></span>
-          <span>Low (0–24) / Resolved</span>
+          <span>Low (0-24) / Resolved</span>
         </div>
       </div>
 

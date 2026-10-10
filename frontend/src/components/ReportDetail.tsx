@@ -113,7 +113,7 @@ export const ReportDetail: React.FC<ReportDetailProps> = ({
 
           {/* Explanation from server */}
           <p className="text-xs text-[#17191C] leading-relaxed bg-white/80 p-2.5 rounded-lg border border-[#E6E8EC] font-mono">
-            {report.risk_explanation || report.explanation || `Score ${report.risk_score}/100 — Calculated via server-side weighted triage heuristic.`}
+            {report.risk_explanation || report.explanation || `Score ${report.risk_score}/100: Calculated via server-side weighted triage heuristic.`}
           </p>
         </div>
 

@@ -53,7 +53,7 @@
   font-family: inherit;
 }
 
-/* Natural Light OpenStreetMap Tiles — NO dark/invert filters */
+/* Natural Light OpenStreetMap Tiles: NO dark/invert filters */
 .leaflet-tile {
   filter: none !important;
 }

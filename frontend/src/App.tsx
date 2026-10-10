@@ -171,7 +171,7 @@ export const App: React.FC = () => {
           <div className="flex items-center gap-1.5">
             <Info className="w-3.5 h-3.5 text-[#157A70] shrink-0" />
             <span>
-              <strong>Server-Side Risk Heuristic:</strong> Score (0–100) = 45% Severity + 35% Open-Meteo Rainfall + 20% Site Vulnerability.
+              <strong>Server-Side Risk Heuristic:</strong> Score (0-100) = 45% Severity + 35% Open-Meteo Rainfall + 20% Site Vulnerability.
             </span>
           </div>
           <div className="font-mono text-[#9298A1] text-[10px]">

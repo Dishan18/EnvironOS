@@ -1,9 +1,9 @@
-# DrainGuard 🌧️
+# DrainGuard ️
 
 > **Amazon Environmental Hacks 2026 · Track 02: Heat and Water**
 > Preventive drain-maintenance and risk-triage platform.
 
-DrainGuard empowers communities to report blocked storm drains and helps municipal / community cleanup operators triage and prioritize hotspots before conditions worsen. Every report receives an explainable 0–100 risk score combining blockage severity, forecasted precipitation, and site exposure vulnerability.
+DrainGuard empowers communities to report blocked storm drains and helps municipal / community cleanup operators triage and prioritize hotspots before conditions worsen. Every report receives an explainable 0-100 risk score combining blockage severity, forecasted precipitation, and site exposure vulnerability.
 
 ---
 
@@ -24,7 +24,7 @@ DrainGuard empowers communities to report blocked storm drains and helps municip
 
 ## Risk-Scoring Heuristic
 
-DrainGuard computes a deterministic, explainable risk score (0–100):
+DrainGuard computes a deterministic, explainable risk score (0-100):
 
 $$\text{Risk Score} = \text{clamp}\big(0.45 \times \text{Severity} + 0.35 \times \text{Rainfall Risk} + 0.20 \times \text{Site Exposure}\big)$$
 
@@ -53,10 +53,10 @@ $$\text{Risk Score} = \text{clamp}\big(0.45 \times \text{Severity} + 0.35 \times
 
 | Score Range | Priority Tier | Recommended SLA |
 |---|---|---|
-| **75 – 100** | `Critical` | Immediate intervention (< 4 hours) |
-| **50 – 74** | `High` | Priority cleanup (< 24 hours) |
-| **25 – 49** | `Moderate` | Scheduled routine maintenance (< 72 hours) |
-| **0 – 24** | `Low` | Periodic monitoring |
+| **75 - 100** | `Critical` | Immediate intervention (< 4 hours) |
+| **50 - 74** | `High` | Priority cleanup (< 24 hours) |
+| **25 - 49** | `Moderate` | Scheduled routine maintenance (< 72 hours) |
+| **0 - 24** | `Low` | Periodic monitoring |
 
 > **Disclaimer**: This is a preventive triage heuristic, not a hydrologic flood forecast model.
 
@@ -181,7 +181,7 @@ Submit a new drain-blockage report. Risk score is computed strictly server-side.
     "priorityScore": 85,
     "priority": "Critical",
     "status": "open",
-    "explanation": "Score 85/100 (Critical) — critical severity (45.0 pts), light rainfall (15.8 pts), road site (20.0 pts)",
+    "explanation": "Score 85/100 (Critical) : critical severity (45.0 pts), light rainfall (15.8 pts), road site (20.0 pts)",
     "rainfall_source": "open-meteo"
   }
   ```

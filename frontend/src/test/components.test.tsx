@@ -22,7 +22,7 @@ const MOCK_REPORTS: ReportItem[] = [
     is_demo: false,
     rainfall_mm_forecast: 15,
     rainfall_source: 'open_meteo',
-    risk_explanation: 'Score 85/100 (Critical) — 45 pts severity, 20 pts site, 20 pts rainfall',
+    risk_explanation: 'Score 85/100 (Critical): 45 pts severity, 20 pts site, 20 pts rainfall',
   },
   {
     report_id: 'rpt_beta',
