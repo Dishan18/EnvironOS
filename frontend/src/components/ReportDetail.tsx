@@ -67,13 +67,13 @@ export const ReportDetail: React.FC<ReportDetailProps> = ({
   };
 
   return (
-    <div className="flex flex-col h-full bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-2xl">
+    <div className="flex flex-col h-full bg-white border border-[#E6E8EC] rounded-2xl overflow-hidden shadow-sm">
       {/* Header */}
-      <div className="p-4 border-b border-slate-800 flex items-center justify-between bg-slate-950/60">
+      <div className="p-3.5 border-b border-[#E6E8EC] flex items-center justify-between bg-white">
         <div className="flex items-center gap-2">
-          <span className="font-mono text-xs text-slate-400 font-semibold">{report.report_id}</span>
+          <span className="font-mono text-xs text-[#17191C] font-semibold">{report.report_id}</span>
           {isDemo && (
-            <span className="text-[10px] bg-purple-500/20 text-purple-300 border border-purple-500/30 px-2 py-0.5 rounded-full font-medium flex items-center gap-1">
+            <span className="text-[10px] bg-[#E8F4F1] text-[#157A70] border border-[#157A70]/20 px-2 py-0.5 rounded-full font-medium flex items-center gap-1">
               <Sparkles className="w-2.5 h-2.5" /> Synthetic Demo
             </span>
           )}
@@ -81,7 +81,7 @@ export const ReportDetail: React.FC<ReportDetailProps> = ({
 
         <button
           onClick={onClose}
-          className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+          className="p-1 rounded-lg text-[#696F78] hover:text-[#17191C] hover:bg-[#F5F6F8] transition-colors cursor-pointer"
           title="Close details"
         >
           <X className="w-4 h-4" />
@@ -89,52 +89,52 @@ export const ReportDetail: React.FC<ReportDetailProps> = ({
       </div>
 
       {/* Body scroll */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-5">
+      <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {/* Priority Hero Card */}
-        <div className={`p-4 rounded-xl border ${priorityInfo.border} ${priorityInfo.bg} space-y-3`}>
+        <div className={`p-4 rounded-xl border ${priorityInfo.border} ${priorityInfo.bg} space-y-2.5`}>
           <div className="flex items-start justify-between gap-3">
             <div>
-              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-[#696F78]">
                 Calculated Risk Tier
               </span>
-              <h3 className={`text-xl font-extrabold ${priorityInfo.text}`}>
+              <h3 className={`text-xl font-bold ${priorityInfo.text}`}>
                 {report.priority.toUpperCase()} PRIORITY
               </h3>
             </div>
 
             <div className="text-right">
-              <span className="text-[10px] uppercase font-mono text-slate-400">Risk Score</span>
-              <div className="text-3xl font-extrabold font-mono text-white tracking-tight">
+              <span className="text-[10px] uppercase font-mono text-[#696F78]">Risk Score</span>
+              <div className="text-3xl font-bold font-mono text-[#17191C] tracking-tight">
                 {report.risk_score}
-                <span className="text-sm text-slate-400 font-normal">/100</span>
+                <span className="text-sm text-[#9298A1] font-normal">/100</span>
               </div>
             </div>
           </div>
 
           {/* Explanation from server */}
-          <p className="text-xs text-slate-200 leading-relaxed bg-black/30 p-2.5 rounded-lg border border-white/5 font-mono">
-            {report.risk_explanation || report.explanation || 'Score calculated via server-side weighted triage heuristic.'}
+          <p className="text-xs text-[#17191C] leading-relaxed bg-white/80 p-2.5 rounded-lg border border-[#E6E8EC] font-mono">
+            {report.risk_explanation || report.explanation || `Score ${report.risk_score}/100 — Calculated via server-side weighted triage heuristic.`}
           </p>
         </div>
 
         {/* Risk Breakdown Component Gauges */}
-        <div className="bg-slate-950/60 border border-slate-800 rounded-xl p-3.5 space-y-3">
-          <h4 className="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
-            <ShieldAlert className="w-3.5 h-3.5 text-emerald-400" /> Triage Factor Breakdown
+        <div className="bg-[#F5F6F8] border border-[#E6E8EC] rounded-xl p-3.5 space-y-3">
+          <h4 className="text-xs font-semibold text-[#17191C] uppercase tracking-wider flex items-center gap-1.5">
+            <ShieldAlert className="w-3.5 h-3.5 text-[#157A70]" /> Triage Factor Breakdown
           </h4>
 
-          <div className="space-y-2 text-xs">
+          <div className="space-y-2.5 text-xs">
             {/* Factor 1: Severity (45%) */}
             <div className="space-y-1">
               <div className="flex justify-between text-[11px]">
-                <span className="text-slate-400 flex items-center gap-1">
-                  <AlertTriangle className="w-3 h-3 text-amber-400" /> Blockage Severity (45%)
+                <span className="text-[#696F78] flex items-center gap-1">
+                  <AlertTriangle className="w-3 h-3 text-[#D97706]" /> Blockage Severity (45%)
                 </span>
-                <span className="font-mono text-slate-200 font-semibold">{severityInfo.label}</span>
+                <span className="font-mono text-[#17191C] font-semibold">{severityInfo.label}</span>
               </div>
-              <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
+              <div className="w-full h-1.5 bg-[#E6E8EC] rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-amber-500 rounded-full"
+                  className="h-full bg-[#D97706] rounded-full"
                   style={{ width: `${report.severity === 'critical' ? 100 : report.severity === 'high' ? 75 : report.severity === 'medium' ? 45 : 20}%` }}
                 ></div>
               </div>
@@ -143,19 +143,19 @@ export const ReportDetail: React.FC<ReportDetailProps> = ({
             {/* Factor 2: Rainfall Forecast (35%) */}
             <div className="space-y-1">
               <div className="flex justify-between text-[11px]">
-                <span className="text-slate-400 flex items-center gap-1">
-                  <CloudRain className="w-3 h-3 text-sky-400" /> 24h Rainfall Forecast (35%)
+                <span className="text-[#696F78] flex items-center gap-1">
+                  <CloudRain className="w-3 h-3 text-[#157A70]" /> 24h Rainfall Forecast (35%)
                 </span>
-                <span className="font-mono text-slate-200 font-semibold">
+                <span className="font-mono text-[#17191C] font-semibold">
                   {report.rainfall_mm_forecast ? `${report.rainfall_mm_forecast} mm` : '0 mm'}
-                  <span className="text-[10px] text-slate-400 ml-1">
+                  <span className="text-[10px] text-[#9298A1] ml-1">
                     ({report.rainfall_source === 'open_meteo' ? 'Open-Meteo live' : 'fallback'})
                   </span>
                 </span>
               </div>
-              <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
+              <div className="w-full h-1.5 bg-[#E6E8EC] rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-sky-500 rounded-full"
+                  className="h-full bg-[#157A70] rounded-full"
                   style={{
                     width: `${
                       Number(report.rainfall_mm_forecast || 0) >= 50
@@ -174,14 +174,14 @@ export const ReportDetail: React.FC<ReportDetailProps> = ({
             {/* Factor 3: Site Exposure (20%) */}
             <div className="space-y-1">
               <div className="flex justify-between text-[11px]">
-                <span className="text-slate-400 flex items-center gap-1">
-                  <Layers className="w-3 h-3 text-emerald-400" /> Site Vulnerability (20%)
+                <span className="text-[#696F78] flex items-center gap-1">
+                  <Layers className="w-3 h-3 text-[#16A34A]" /> Site Vulnerability (20%)
                 </span>
-                <span className="font-mono text-slate-200 font-semibold">{getSiteTypeLabel(report.site_type || report.siteType || 'road')}</span>
+                <span className="font-mono text-[#17191C] font-semibold">{getSiteTypeLabel(report.site_type || report.siteType || 'road')}</span>
               </div>
-              <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
+              <div className="w-full h-1.5 bg-[#E6E8EC] rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-emerald-500 rounded-full"
+                  className="h-full bg-[#16A34A] rounded-full"
                   style={{
                     width: `${
                       report.site_type === 'road'
@@ -204,8 +204,8 @@ export const ReportDetail: React.FC<ReportDetailProps> = ({
         {/* Attached Photograph */}
         {report.image_url ? (
           <div className="space-y-1.5">
-            <span className="text-xs font-semibold text-slate-400">Attached Photograph (Private S3)</span>
-            <div className="rounded-xl overflow-hidden border border-slate-800 bg-slate-950 aspect-video relative group">
+            <span className="text-xs font-semibold text-[#17191C]">Attached Photograph (Private S3)</span>
+            <div className="rounded-xl overflow-hidden border border-[#E6E8EC] bg-[#F5F6F8] aspect-video relative group">
               <img
                 src={report.image_url}
                 alt="Drain blockage incident"
@@ -215,7 +215,7 @@ export const ReportDetail: React.FC<ReportDetailProps> = ({
                 href={report.image_url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1.5 text-xs text-white font-medium"
+                className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1.5 text-xs text-white font-medium"
               >
                 <ExternalLink className="w-4 h-4" /> View Full Resolution Photo
               </a>
@@ -225,48 +225,48 @@ export const ReportDetail: React.FC<ReportDetailProps> = ({
 
         {/* Description text */}
         <div className="space-y-1.5">
-          <span className="text-xs font-semibold text-slate-400">Incident Description</span>
-          <div className="p-3 bg-slate-950/60 border border-slate-800 rounded-lg text-xs text-slate-200 leading-relaxed">
+          <span className="text-xs font-semibold text-[#17191C]">Incident Description</span>
+          <div className="p-3 bg-[#F5F6F8] border border-[#E6E8EC] rounded-xl text-xs text-[#17191C] leading-relaxed">
             {report.description || 'No descriptive notes provided.'}
           </div>
         </div>
 
         {/* Location & Metadata */}
         <div className="grid grid-cols-2 gap-3 text-xs">
-          <div className="p-3 bg-slate-950/40 border border-slate-800/80 rounded-lg space-y-1">
-            <span className="text-[11px] text-slate-400 flex items-center gap-1">
-              <MapPin className="w-3 h-3 text-emerald-400" /> Coordinates
+          <div className="p-3 bg-[#F5F6F8] border border-[#E6E8EC] rounded-xl space-y-1">
+            <span className="text-[11px] text-[#696F78] flex items-center gap-1">
+              <MapPin className="w-3 h-3 text-[#157A70]" /> Coordinates
             </span>
-            <div className="font-mono text-slate-200 text-[11px]">
+            <div className="font-mono text-[#17191C] text-[11px]">
               {lat.toFixed(5)}, {lng.toFixed(5)}
             </div>
             <a
               href={`https://www.google.com/maps?q=${lat},${lng}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-[10px] text-emerald-400 hover:underline flex items-center gap-1 pt-1"
+              className="text-[10px] text-[#157A70] hover:underline flex items-center gap-1 pt-0.5 font-medium"
             >
               Open in Google Maps <ExternalLink className="w-2.5 h-2.5" />
             </a>
           </div>
 
-          <div className="p-3 bg-slate-950/40 border border-slate-800/80 rounded-lg space-y-1">
-            <span className="text-[11px] text-slate-400 flex items-center gap-1">
-              <Clock className="w-3 h-3 text-sky-400" /> Timestamps
+          <div className="p-3 bg-[#F5F6F8] border border-[#E6E8EC] rounded-xl space-y-1">
+            <span className="text-[11px] text-[#696F78] flex items-center gap-1">
+              <Clock className="w-3 h-3 text-[#157A70]" /> Timestamps
             </span>
-            <div className="text-[11px] text-slate-300">
-              Reported: <span className="font-mono">{formatTimestamp(report.created_at || report.createdAt)}</span>
+            <div className="text-[11px] text-[#17191C]">
+              Reported: <span className="font-mono text-[#696F78]">{formatTimestamp(report.created_at || report.createdAt)}</span>
             </div>
-            <div className="text-[10px] text-slate-400">
+            <div className="text-[10px] text-[#696F78]">
               Updated: <span className="font-mono">{formatTimestamp(report.updated_at || report.updatedAt)}</span>
             </div>
           </div>
         </div>
 
         {/* Cleanup Workflow Status Update Action */}
-        <div className="pt-2 border-t border-slate-800 space-y-2">
+        <div className="pt-2 border-t border-[#E6E8EC] space-y-2">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-slate-200 uppercase tracking-wider">
+            <span className="text-xs font-semibold text-[#17191C] uppercase tracking-wider">
               Operator Workflow Status
             </span>
             <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${statusInfo.className}`}>
@@ -275,7 +275,7 @@ export const ReportDetail: React.FC<ReportDetailProps> = ({
           </div>
 
           {statusError && (
-            <div className="p-2 bg-rose-500/10 border border-rose-500/30 rounded text-rose-400 text-xs">
+            <div className="p-2 bg-[#FDF2F2] border border-[#F8D7D7] rounded-xl text-[#C5282A] text-xs">
               {statusError}
             </div>
           )}
@@ -284,10 +284,10 @@ export const ReportDetail: React.FC<ReportDetailProps> = ({
             <button
               onClick={() => handleStatusChange('open')}
               disabled={isUpdatingStatus || report.status === 'open'}
-              className={`py-2 px-2.5 rounded-lg text-xs font-medium border flex items-center justify-center gap-1.5 transition-all ${
+              className={`py-2 px-2.5 rounded-xl text-xs font-medium border flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
                 report.status === 'open'
-                  ? 'bg-rose-500/20 text-rose-300 border-rose-500/40 font-bold'
-                  : 'bg-slate-950/60 text-slate-400 border-slate-800 hover:bg-slate-800 hover:text-white'
+                  ? 'bg-[#FDF2F2] text-[#C5282A] border-[#F8D7D7] font-semibold shadow-xs'
+                  : 'bg-white text-[#696F78] border-[#E6E8EC] hover:bg-[#F5F6F8] hover:text-[#17191C]'
               }`}
             >
               {isUpdatingStatus && report.status !== 'open' ? (
@@ -299,10 +299,10 @@ export const ReportDetail: React.FC<ReportDetailProps> = ({
             <button
               onClick={() => handleStatusChange('in_progress')}
               disabled={isUpdatingStatus || report.status === 'in_progress'}
-              className={`py-2 px-2.5 rounded-lg text-xs font-medium border flex items-center justify-center gap-1.5 transition-all ${
+              className={`py-2 px-2.5 rounded-xl text-xs font-medium border flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
                 report.status === 'in_progress'
-                  ? 'bg-sky-500/20 text-sky-300 border-sky-500/40 font-bold'
-                  : 'bg-slate-950/60 text-slate-400 border-slate-800 hover:bg-slate-800 hover:text-white'
+                  ? 'bg-[#F0F7FF] text-[#0284C7] border-[#BAE6FD] font-semibold shadow-xs'
+                  : 'bg-white text-[#696F78] border-[#E6E8EC] hover:bg-[#F5F6F8] hover:text-[#17191C]'
               }`}
             >
               {isUpdatingStatus && report.status !== 'in_progress' ? (
@@ -314,10 +314,10 @@ export const ReportDetail: React.FC<ReportDetailProps> = ({
             <button
               onClick={() => handleStatusChange('resolved')}
               disabled={isUpdatingStatus || report.status === 'resolved'}
-              className={`py-2 px-2.5 rounded-lg text-xs font-medium border flex items-center justify-center gap-1.5 transition-all ${
+              className={`py-2 px-2.5 rounded-xl text-xs font-medium border flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
                 report.status === 'resolved'
-                  ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40 font-bold'
-                  : 'bg-slate-950/60 text-slate-400 border-slate-800 hover:bg-slate-800 hover:text-white'
+                  ? 'bg-[#F0FDF4] text-[#15803D] border-[#BBF7D0] font-semibold shadow-xs'
+                  : 'bg-white text-[#696F78] border-[#E6E8EC] hover:bg-[#F5F6F8] hover:text-[#17191C]'
               }`}
             >
               {isUpdatingStatus && report.status !== 'resolved' ? (

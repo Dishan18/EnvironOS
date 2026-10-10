@@ -6,15 +6,13 @@ import { ReportList } from './components/ReportList';
 import { ReportDetail } from './components/ReportDetail';
 import { SubmitReportModal } from './components/SubmitReportModal';
 import {
+  Shield,
   ShieldAlert,
+  AlertCircle,
   AlertTriangle,
   CheckCircle2,
-  Clock,
   RefreshCw,
   Plus,
-  CloudRain,
-  Activity,
-  Layers,
   Database,
   Info,
   MapPin,
@@ -79,7 +77,6 @@ export const App: React.FC = () => {
   // Handler when report is created
   const handleReportCreated = (result: CreateReportResponse, lat: number, lng: number) => {
     fetchReportsData().then(() => {
-      // Focus on the newly created report
       setPickedLocation(null);
     });
   };
@@ -104,40 +101,39 @@ export const App: React.FC = () => {
   const resolvedReports = reports.filter((r) => r.status === 'resolved').length;
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans">
-      {/* ── Top Operations Header ────────────────────────────────────────────── */}
-      <header className="border-b border-slate-800/80 bg-slate-900/80 backdrop-blur-md sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-4">
-          {/* Logo & Branding */}
+    <div className="min-h-screen bg-[#F5F6F8] text-[#17191C] flex flex-col font-sans">
+      {/* ── Top Navigation Bar ────────────────────────────────────────────── */}
+      <header className="border-b border-[#E6E8EC] bg-white sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-4 py-2.5 flex flex-wrap items-center justify-between gap-3">
+          {/* Logo & Identity (No Emojis) */}
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-400 flex items-center justify-center shadow-lg shadow-emerald-950/60 border border-emerald-400/30">
-              <CloudRain className="w-5 h-5 text-slate-950" />
+            <div className="w-8 h-8 rounded-xl bg-[#E8F4F1] flex items-center justify-center text-[#157A70] border border-[#157A70]/15">
+              <Shield className="w-4 h-4" />
             </div>
 
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="text-base font-extrabold tracking-tight text-white flex items-center gap-1.5">
-                  DrainGuard <span className="text-emerald-400">·</span> EnvironOS
+                <h1 className="text-sm font-semibold tracking-tight text-[#17191C]">
+                  DrainGuard
                 </h1>
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-300 border border-emerald-500/20 font-semibold">
-                  Track 02: Heat & Water
+                <span className="text-[11px] text-[#696F78] font-normal">EnvironOS</span>
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#E8F4F1] text-[#157A70] border border-[#157A70]/15 font-medium">
+                  Track 02 · Heat & Water
                 </span>
               </div>
-              <p className="text-[11px] text-slate-400">
+              <p className="text-[11px] text-[#696F78]">
                 Preventive Drain-Maintenance & Flood Risk Triage Platform
               </p>
             </div>
           </div>
 
-          {/* Action CTAs */}
-          <div className="flex items-center gap-2.5">
-            {/* Live Backend Connection Badge */}
-            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-950 border border-slate-800 text-[11px] font-mono text-slate-400">
+          {/* Action Controls */}
+          <div className="flex items-center gap-2">
+            {/* Live Backend Connection Indicator */}
+            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#F5F6F8] border border-[#E6E8EC] text-[11px] text-[#696F78] font-mono">
               <span
                 className={`w-2 h-2 rounded-full ${
-                  apiHealth === 'ok'
-                    ? 'bg-emerald-400 shadow-sm shadow-emerald-400'
-                    : 'bg-rose-400'
+                  apiHealth === 'ok' ? 'bg-[#16A34A]' : 'bg-[#D9383A]'
                 }`}
               ></span>
               <span>AWS ap-south-1</span>
@@ -147,10 +143,10 @@ export const App: React.FC = () => {
             <button
               onClick={fetchReportsData}
               disabled={isRefreshing}
-              className="p-2 rounded-lg bg-slate-800/60 hover:bg-slate-800 border border-slate-700/60 text-slate-300 hover:text-white transition-colors"
+              className="p-2 rounded-xl bg-white hover:bg-[#F5F6F8] border border-[#E6E8EC] text-[#696F78] hover:text-[#17191C] transition-colors cursor-pointer"
               title="Refresh data from DynamoDB"
             >
-              <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin text-emerald-400' : ''}`} />
+              <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin text-[#157A70]' : ''}`} />
             </button>
 
             {/* Submit Blockage CTA */}
@@ -160,25 +156,26 @@ export const App: React.FC = () => {
                 setIsPickingLocation(false);
                 setIsSubmitModalOpen(true);
               }}
-              className="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold flex items-center gap-1.5 shadow-lg shadow-emerald-950/60 transition-all hover:scale-[1.02] cursor-pointer"
+              className="px-3 py-1.5 rounded-xl bg-[#157A70] hover:bg-[#11685F] text-white text-xs font-medium flex items-center gap-1.5 shadow-sm transition-all active:scale-[0.98] cursor-pointer"
             >
-              <Plus className="w-4 h-4" /> Report Drain Blockage
+              <Plus className="w-3.5 h-3.5" />
+              <span>Report Drain Blockage</span>
             </button>
           </div>
         </div>
       </header>
 
       {/* ── Heuristic & Explanatory Banner ──────────────────────────────────── */}
-      <div className="bg-slate-900/40 border-b border-slate-800/60 text-[11px] text-slate-400 py-1.5 px-4">
+      <div className="bg-white/70 border-b border-[#E6E8EC] text-[11px] text-[#696F78] py-1.5 px-4">
         <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <Info className="w-3.5 h-3.5 text-teal-400 shrink-0" />
+          <div className="flex items-center gap-1.5">
+            <Info className="w-3.5 h-3.5 text-[#157A70] shrink-0" />
             <span>
               <strong>Server-Side Risk Heuristic:</strong> Score (0–100) = 45% Severity + 35% Open-Meteo Rainfall + 20% Site Vulnerability.
             </span>
           </div>
-          <div className="font-mono text-slate-500 text-[10px]">
-            API: <span className="text-slate-400">m3sxthznac.execute-api.ap-south-1.amazonaws.com</span>
+          <div className="font-mono text-[#9298A1] text-[10px]">
+            API: <span className="text-[#696F78]">m3sxthznac.execute-api.ap-south-1.amazonaws.com</span>
           </div>
         </div>
       </div>
@@ -187,67 +184,67 @@ export const App: React.FC = () => {
       <main className="flex-1 max-w-7xl w-full mx-auto p-4 space-y-4">
         {/* Error Banner if API unreachable */}
         {apiError && (
-          <div className="p-3 bg-rose-500/10 border border-rose-500/30 rounded-xl text-rose-300 text-xs flex items-center justify-between gap-3">
+          <div className="p-3 bg-[#FDF2F2] border border-[#F8D7D7] rounded-xl text-[#C5282A] text-xs flex items-center justify-between gap-3">
             <div className="flex items-center gap-2">
-              <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0" />
+              <AlertTriangle className="w-4 h-4 text-[#D9383A] shrink-0" />
               <span>{apiError}</span>
             </div>
             <button
               onClick={fetchReportsData}
-              className="text-[11px] underline text-rose-200 hover:text-white"
+              className="text-[11px] underline font-medium text-[#C5282A] hover:text-[#991B1B] cursor-pointer"
             >
               Retry Connection
             </button>
           </div>
         )}
 
-        {/* ── Metrics Cards Grid ───────────────────────────────────────────── */}
+        {/* ── Overview Metrics: 4 Understated KPI Cards ─────────────────────── */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {/* Card 1: Total Incidents */}
-          <div className="p-3.5 rounded-xl bg-slate-900/60 border border-slate-800/80 shadow-md">
-            <div className="flex items-center justify-between text-slate-400 mb-1">
+          <div className="p-3.5 rounded-2xl bg-white border border-[#E6E8EC] shadow-sm">
+            <div className="flex items-center justify-between text-[#696F78] mb-1">
               <span className="text-xs font-medium">Total Blockages</span>
-              <Database className="w-3.5 h-3.5 text-slate-500" />
+              <Database className="w-3.5 h-3.5 text-[#9298A1]" />
             </div>
-            <div className="text-2xl font-extrabold font-mono text-white">{totalReports}</div>
-            <div className="text-[10px] text-slate-500 mt-1 font-mono">DynamoDB Records</div>
+            <div className="text-2xl font-bold font-mono text-[#17191C]">{totalReports}</div>
+            <div className="text-[11px] text-[#9298A1] mt-0.5 font-mono">DynamoDB Records</div>
           </div>
 
           {/* Card 2: Open Incidents */}
-          <div className="p-3.5 rounded-xl bg-slate-900/60 border border-rose-900/40 shadow-md">
-            <div className="flex items-center justify-between text-rose-400 mb-1">
+          <div className="p-3.5 rounded-2xl bg-white border border-[#E6E8EC] shadow-sm">
+            <div className="flex items-center justify-between text-[#C5282A] mb-1">
               <span className="text-xs font-medium">Open Incidents</span>
-              <AlertTriangle className="w-3.5 h-3.5 text-rose-400" />
+              <AlertCircle className="w-3.5 h-3.5 text-[#D9383A]" />
             </div>
-            <div className="text-2xl font-extrabold font-mono text-rose-300">{openReports}</div>
-            <div className="text-[10px] text-rose-400/80 mt-1">Pending dispatch</div>
+            <div className="text-2xl font-bold font-mono text-[#C5282A]">{openReports}</div>
+            <div className="text-[11px] text-[#9298A1] mt-0.5">Pending dispatch</div>
           </div>
 
           {/* Card 3: Critical & High Priority */}
-          <div className="p-3.5 rounded-xl bg-slate-900/60 border border-amber-900/40 shadow-md">
-            <div className="flex items-center justify-between text-amber-400 mb-1">
+          <div className="p-3.5 rounded-2xl bg-white border border-[#E6E8EC] shadow-sm">
+            <div className="flex items-center justify-between text-[#B45309] mb-1">
               <span className="text-xs font-medium">Critical / High</span>
-              <ShieldAlert className="w-3.5 h-3.5 text-amber-400" />
+              <ShieldAlert className="w-3.5 h-3.5 text-[#D97706]" />
             </div>
-            <div className="text-2xl font-extrabold font-mono text-amber-300">{criticalHighReports}</div>
-            <div className="text-[10px] text-amber-400/80 mt-1">Immediate intervention</div>
+            <div className="text-2xl font-bold font-mono text-[#B45309]">{criticalHighReports}</div>
+            <div className="text-[11px] text-[#9298A1] mt-0.5">Immediate intervention</div>
           </div>
 
-          {/* Card 4: Resolved Drains */}
-          <div className="p-3.5 rounded-xl bg-slate-900/60 border border-emerald-900/40 shadow-md">
-            <div className="flex items-center justify-between text-emerald-400 mb-1">
+          {/* Card 4: Resolved Cleanups */}
+          <div className="p-3.5 rounded-2xl bg-white border border-[#E6E8EC] shadow-sm">
+            <div className="flex items-center justify-between text-[#15803D] mb-1">
               <span className="text-xs font-medium">Resolved Cleanups</span>
-              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+              <CheckCircle2 className="w-3.5 h-3.5 text-[#16A34A]" />
             </div>
-            <div className="text-2xl font-extrabold font-mono text-emerald-300">{resolvedReports}</div>
-            <div className="text-[10px] text-emerald-400/80 mt-1">Flow verified clear</div>
+            <div className="text-2xl font-bold font-mono text-[#15803D]">{resolvedReports}</div>
+            <div className="text-[11px] text-[#9298A1] mt-0.5">Flow verified clear</div>
           </div>
         </div>
 
-        {/* ── Main Content Grid: Map + Queue + Detail ──────────────────────── */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 h-[calc(100vh-270px)] min-h-[580px]">
-          {/* Left Column: Interactive Map (7 cols on desktop) */}
-          <div className={`${selectedReport ? 'lg:col-span-4' : 'lg:col-span-7'} h-full transition-all duration-300`}>
+        {/* ── Main Operations Grid: Map + Queue + Detail ───────────────────────── */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:h-[calc(100vh-250px)] lg:min-h-[580px]">
+          {/* Left Column: Interactive Map */}
+          <div className={`${selectedReport ? 'lg:col-span-4' : 'lg:col-span-7'} h-[360px] lg:h-full transition-all duration-300`}>
             <ReportMap
               reports={reports}
               selectedReport={selectedReport}
@@ -258,8 +255,8 @@ export const App: React.FC = () => {
             />
           </div>
 
-          {/* Center Column: Operations Queue (5 cols when no detail, 4 cols when detail open) */}
-          <div className={`${selectedReport ? 'lg:col-span-4' : 'lg:col-span-5'} h-full transition-all duration-300`}>
+          {/* Center Column: Operations Queue */}
+          <div className={`${selectedReport ? 'lg:col-span-4' : 'lg:col-span-5'} h-[540px] lg:h-full transition-all duration-300`}>
             <ReportList
               reports={reports}
               selectedReport={selectedReport}
@@ -268,14 +265,16 @@ export const App: React.FC = () => {
             />
           </div>
 
-          {/* Right Column: Detail Drawer (4 cols when selected) */}
+          {/* Right Column: Detail Drawer (Desktop inline / Mobile overlay) */}
           {selectedReport && (
-            <div className="lg:col-span-4 h-full animate-in fade-in duration-200">
-              <ReportDetail
-                report={selectedReport}
-                onClose={() => setSelectedReport(null)}
-                onReportUpdated={handleReportUpdated}
-              />
+            <div className="fixed inset-0 z-[2000] p-4 bg-black/25 backdrop-blur-xs flex items-center justify-center lg:static lg:inset-auto lg:p-0 lg:bg-transparent lg:backdrop-blur-none lg:block lg:col-span-4 h-full animate-in fade-in duration-200">
+              <div className="w-full max-w-lg lg:max-w-none h-[90vh] lg:h-full">
+                <ReportDetail
+                  report={selectedReport}
+                  onClose={() => setSelectedReport(null)}
+                  onReportUpdated={handleReportUpdated}
+                />
+              </div>
             </div>
           )}
         </div>
@@ -286,17 +285,16 @@ export const App: React.FC = () => {
         <aside
           role="status"
           aria-live="polite"
-          className="fixed top-20 left-1/2 -translate-x-1/2 z-[3000] bg-slate-900/95 backdrop-blur-md border-2 border-emerald-500 shadow-2xl shadow-emerald-950/80 px-5 py-3 rounded-2xl flex items-center gap-4 text-xs text-white animate-in fade-in slide-in-from-top-4 duration-200"
+          className="fixed top-16 left-1/2 -translate-x-1/2 z-[3000] bg-white border border-[#157A70] shadow-xl px-4 py-2 rounded-2xl flex items-center gap-3 text-xs text-[#17191C] animate-in fade-in slide-in-from-top-4 duration-200"
         >
-          <div className="w-8 h-8 rounded-xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 shrink-0">
-            <MapPin className="w-4 h-4 animate-bounce" />
+          <div className="w-7 h-7 rounded-xl bg-[#E8F4F1] flex items-center justify-center text-[#157A70] shrink-0">
+            <MapPin className="w-3.5 h-3.5" />
           </div>
           <div>
-            <div className="font-bold text-white flex items-center gap-2">
-              <span>Map Pin Selection Active</span>
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+            <div className="font-semibold text-[#17191C]">
+              Map Pin Selection Active
             </div>
-            <div className="text-[11px] text-slate-400">
+            <div className="text-[11px] text-[#696F78]">
               Click anywhere on the map to set drain blockage coordinates
             </div>
           </div>
@@ -306,7 +304,7 @@ export const App: React.FC = () => {
               setIsPickingLocation(false);
               setIsSubmitModalOpen(true);
             }}
-            className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-xs font-semibold border border-slate-700 transition-colors cursor-pointer"
+            className="px-2.5 py-1 bg-[#F5F6F8] hover:bg-[#E6E8EC] text-[#17191C] rounded-lg text-xs font-medium border border-[#E6E8EC] transition-colors ml-1 cursor-pointer"
           >
             Cancel / Back to Form
           </button>
@@ -331,3 +329,4 @@ export const App: React.FC = () => {
     </div>
   );
 };
+

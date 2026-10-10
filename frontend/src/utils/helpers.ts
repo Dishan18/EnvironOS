@@ -10,37 +10,37 @@ export function getPriorityColor(priority: string | undefined): {
   const p = (priority || '').toLowerCase();
   if (p === 'critical') {
     return {
-      bg: 'bg-rose-950/60',
-      text: 'text-rose-400',
-      border: 'border-rose-800/80',
-      badge: 'bg-rose-500 text-white',
-      hex: '#f43f5e',
+      bg: 'bg-[#FDF2F2]',
+      text: 'text-[#C5282A]',
+      border: 'border-[#F8D7D7]',
+      badge: 'bg-[#FDF2F2] text-[#C5282A] border border-[#F8D7D7]',
+      hex: '#D9383A',
     };
   }
   if (p === 'high') {
     return {
-      bg: 'bg-amber-950/60',
-      text: 'text-amber-400',
-      border: 'border-amber-800/80',
-      badge: 'bg-amber-500 text-slate-950',
-      hex: '#f59e0b',
+      bg: 'bg-[#FEF3C7]',
+      text: 'text-[#B45309]',
+      border: 'border-[#FDE68A]',
+      badge: 'bg-[#FEF3C7] text-[#B45309] border border-[#FDE68A]',
+      hex: '#D97706',
     };
   }
   if (p === 'moderate' || p === 'medium') {
     return {
-      bg: 'bg-yellow-950/40',
-      text: 'text-yellow-400',
-      border: 'border-yellow-800/60',
-      badge: 'bg-yellow-500 text-slate-950',
-      hex: '#eab308',
+      bg: 'bg-[#FEF9C3]',
+      text: 'text-[#A16207]',
+      border: 'border-[#FEF08A]',
+      badge: 'bg-[#FEF9C3] text-[#A16207] border border-[#FEF08A]',
+      hex: '#CA8A04',
     };
   }
   return {
-    bg: 'bg-emerald-950/40',
-    text: 'text-emerald-400',
-    border: 'border-emerald-800/60',
-    badge: 'bg-emerald-500 text-slate-950',
-    hex: '#10b981',
+    bg: 'bg-[#F0FDF4]',
+    text: 'text-[#15803D]',
+    border: 'border-[#BBF7D0]',
+    badge: 'bg-[#F0FDF4] text-[#15803D] border border-[#BBF7D0]',
+    hex: '#16A34A',
   };
 }
 
@@ -52,22 +52,22 @@ export function getStatusBadge(status: ReportStatus): {
     case 'open':
       return {
         label: 'Open Incident',
-        className: 'bg-rose-500/10 text-rose-400 border border-rose-500/20',
+        className: 'bg-[#FDF2F2] text-[#C5282A] border border-[#F8D7D7]',
       };
     case 'in_progress':
       return {
         label: 'In Progress',
-        className: 'bg-sky-500/10 text-sky-400 border border-sky-500/20',
+        className: 'bg-[#F0F7FF] text-[#0284C7] border border-[#BAE6FD]',
       };
     case 'resolved':
       return {
         label: 'Resolved',
-        className: 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20',
+        className: 'bg-[#F0FDF4] text-[#15803D] border border-[#BBF7D0]',
       };
     default:
       return {
         label: status,
-        className: 'bg-slate-800 text-slate-400 border border-slate-700',
+        className: 'bg-[#F5F6F8] text-[#696F78] border border-[#E6E8EC]',
       };
   }
 }
@@ -78,13 +78,13 @@ export function getSeverityLabel(severity: Severity): {
 } {
   switch (severity) {
     case 'critical':
-      return { label: 'Critical Blockage (100%)', className: 'text-rose-400' };
+      return { label: 'Critical Blockage (100%)', className: 'text-[#C5282A]' };
     case 'high':
-      return { label: 'High Blockage (75%)', className: 'text-amber-400' };
+      return { label: 'High Blockage (75%)', className: 'text-[#B45309]' };
     case 'medium':
-      return { label: 'Medium Blockage (45%)', className: 'text-yellow-400' };
+      return { label: 'Medium Blockage (45%)', className: 'text-[#A16207]' };
     case 'low':
-      return { label: 'Low Blockage (20%)', className: 'text-slate-400' };
+      return { label: 'Low Blockage (20%)', className: 'text-[#696F78]' };
   }
 }
 

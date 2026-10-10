@@ -18,30 +18,29 @@ interface ReportMapProps {
 function createCustomIcon(report: ReportItem, isSelected: boolean) {
   const pColor = getPriorityColor(report.priority);
   const isResolved = report.status === 'resolved';
-  const isCritical = (report.priority || '').toLowerCase() === 'critical' && !isResolved;
 
-  const bgHex = isResolved ? '#10b981' : pColor.hex;
-  const pulseClass = isCritical ? 'marker-pulse-critical' : '';
+  const bgHex = isResolved ? '#16A34A' : pColor.hex;
 
   const html = `
     <div style="position: relative; display: flex; align-items: center; justify-content: center; width: 34px; height: 34px;">
-      <div class="${pulseClass}" style="
+      <div style="
         background: ${bgHex};
         width: ${isSelected ? '32px' : '26px'};
         height: ${isSelected ? '32px' : '26px'};
         border-radius: 50%;
         border: 2px solid #ffffff;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        box-shadow: 0 2px 6px rgba(0,0,0,0.18);
         display: flex;
         align-items: center;
         justify-content: center;
         color: white;
         font-weight: 700;
         font-size: 11px;
+        font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
         transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         transform: ${isSelected ? 'scale(1.2)' : 'scale(1)'};
       ">
-        ${isResolved ? '✓' : report.risk_score}
+        ${isResolved ? '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>' : report.risk_score}
       </div>
     </div>
   `;
@@ -58,25 +57,25 @@ function createCustomIcon(report: ReportItem, isSelected: boolean) {
 function createPickerIcon() {
   const html = `
     <div style="
-      background: #10b981;
-      width: 32px;
-      height: 32px;
+      background: #157A70;
+      width: 30px;
+      height: 30px;
       border-radius: 50% 50% 50% 0;
       transform: rotate(-45deg);
       border: 2px solid white;
-      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.6);
+      box-shadow: 0 4px 12px rgba(21, 122, 112, 0.35);
       display: flex;
       align-items: center;
       justify-content: center;
     ">
-      <div style="width: 10px; height: 10px; background: white; border-radius: 50%;"></div>
+      <div style="width: 8px; height: 8px; background: white; border-radius: 50%;"></div>
     </div>
   `;
   return L.divIcon({
     html,
     className: 'picker-marker',
-    iconSize: [32, 32],
-    iconAnchor: [16, 32],
+    iconSize: [30, 30],
+    iconAnchor: [15, 30],
   });
 }
 
@@ -159,39 +158,40 @@ export const ReportMap: React.FC<ReportMapProps> = ({
 
   return (
     <div
-      className={`relative w-full h-full min-h-[420px] rounded-xl overflow-hidden border bg-slate-950 shadow-2xl transition-all duration-300 ${
+      className={`relative w-full h-full min-h-[420px] rounded-2xl overflow-hidden border bg-white shadow-sm transition-all duration-300 ${
         isPickingLocation
-          ? 'border-emerald-500 ring-4 ring-emerald-500/20 shadow-emerald-500/10'
-          : 'border-slate-800'
+          ? 'border-[#157A70] ring-2 ring-[#157A70]/20'
+          : 'border-[#E6E8EC]'
       }`}
     >
       {/* Location Picker Banner overlay */}
       {isPickingLocation && (
-        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[1000] bg-emerald-600/95 backdrop-blur-md text-white text-xs font-semibold px-4 py-2 rounded-full shadow-lg border border-emerald-400/30 flex items-center gap-2 pointer-events-none animate-pulse">
-          <Navigation className="w-3.5 h-3.5" />
-          Click anywhere on the map to set blockage coordinates
+        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[1000] bg-white/95 backdrop-blur-md text-[#17191C] text-xs font-medium px-3.5 py-1.5 rounded-full shadow-md border border-[#157A70]/30 flex items-center gap-2 pointer-events-none">
+          <Navigation className="w-3.5 h-3.5 text-[#157A70]" />
+          <span>Click map to set blockage coordinates</span>
         </div>
       )}
 
       {/* Map Legend */}
-      <div className="absolute bottom-4 right-4 z-[1000] bg-slate-900/90 backdrop-blur-md border border-slate-800/80 p-3 rounded-lg shadow-xl text-xs space-y-1.5 hidden sm:block">
-        <div className="font-semibold text-slate-300 mb-1 flex items-center gap-1.5 text-[11px] uppercase tracking-wider">
-          <MapPin className="w-3.5 h-3.5 text-emerald-400" /> Priority Legend (Score 0-100)
+      <div className="absolute bottom-4 right-4 z-[1000] bg-white/95 backdrop-blur-md border border-[#E6E8EC] p-3 rounded-xl shadow-sm text-xs space-y-1.5 hidden sm:block">
+        <div className="font-semibold text-[#17191C] mb-1 flex items-center gap-1.5 text-[11px] tracking-tight">
+          <MapPin className="w-3.5 h-3.5 text-[#157A70]" />
+          <span>Priority Legend (Score 0–100)</span>
         </div>
-        <div className="flex items-center gap-2 text-slate-300">
-          <span className="w-3 h-3 rounded-full bg-rose-500 shadow-sm shadow-rose-500/50"></span>
+        <div className="flex items-center gap-2 text-[#696F78]">
+          <span className="w-2.5 h-2.5 rounded-full bg-[#D9383A]"></span>
           <span>Critical (75–100)</span>
         </div>
-        <div className="flex items-center gap-2 text-slate-300">
-          <span className="w-3 h-3 rounded-full bg-amber-500 shadow-sm shadow-amber-500/50"></span>
+        <div className="flex items-center gap-2 text-[#696F78]">
+          <span className="w-2.5 h-2.5 rounded-full bg-[#D97706]"></span>
           <span>High (50–74)</span>
         </div>
-        <div className="flex items-center gap-2 text-slate-300">
-          <span className="w-3 h-3 rounded-full bg-yellow-500 shadow-sm shadow-yellow-500/50"></span>
+        <div className="flex items-center gap-2 text-[#696F78]">
+          <span className="w-2.5 h-2.5 rounded-full bg-[#CA8A04]"></span>
           <span>Moderate (25–49)</span>
         </div>
-        <div className="flex items-center gap-2 text-slate-300">
-          <span className="w-3 h-3 rounded-full bg-emerald-500 shadow-sm shadow-emerald-500/50"></span>
+        <div className="flex items-center gap-2 text-[#696F78]">
+          <span className="w-2.5 h-2.5 rounded-full bg-[#16A34A]"></span>
           <span>Low (0–24) / Resolved</span>
         </div>
       </div>
@@ -218,7 +218,7 @@ export const ReportMap: React.FC<ReportMapProps> = ({
             icon={createPickerIcon()}
           >
             <Popup>
-              <div className="text-xs">
+              <div className="text-xs text-[#17191C]">
                 <strong>Selected Coordinates:</strong>
                 <br />
                 {pickedLocation.lat}, {pickedLocation.lng}
@@ -252,9 +252,9 @@ export const ReportMap: React.FC<ReportMapProps> = ({
               }}
             >
               <Popup>
-                <div className="w-64 p-1 text-slate-100">
-                  <div className="flex items-center justify-between gap-2 border-b border-slate-800 pb-2 mb-2">
-                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${priorityInfo.badge}`}>
+                <div className="w-64 p-1 text-[#17191C]">
+                  <div className="flex items-center justify-between gap-2 border-b border-[#E6E8EC] pb-2 mb-2">
+                    <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${priorityInfo.badge}`}>
                       {report.priority.toUpperCase()} ({report.risk_score})
                     </span>
                     <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${statusBadge.className}`}>
@@ -263,7 +263,7 @@ export const ReportMap: React.FC<ReportMapProps> = ({
                   </div>
 
                   {report.image_url && (
-                    <div className="mb-2 rounded-md overflow-hidden bg-slate-950 aspect-video relative">
+                    <div className="mb-2 rounded-xl overflow-hidden bg-[#F5F6F8] border border-[#E6E8EC] aspect-video relative">
                       <img
                         src={report.image_url}
                         alt="Blocked drain observation"
@@ -273,26 +273,27 @@ export const ReportMap: React.FC<ReportMapProps> = ({
                     </div>
                   )}
 
-                  <div className="text-xs text-slate-300 font-medium mb-1 line-clamp-2">
+                  <div className="text-xs text-[#17191C] font-medium mb-1.5 line-clamp-2">
                     {report.description || 'No description provided.'}
                   </div>
 
-                  <div className="text-[11px] text-slate-400 space-y-0.5 mb-3">
-                    <div className="flex items-center gap-1">
-                      <AlertTriangle className="w-3 h-3 text-amber-400" />
-                      <span>Severity: <strong className="text-slate-200">{report.severity}</strong></span>
+                  <div className="text-[11px] text-[#696F78] space-y-0.5 mb-3">
+                    <div className="flex items-center gap-1.5">
+                      <AlertTriangle className="w-3 h-3 text-[#D97706]" />
+                      <span>Severity: <strong className="text-[#17191C]">{report.severity}</strong></span>
                     </div>
-                    <div className="flex items-center gap-1">
-                      <CloudRain className="w-3 h-3 text-sky-400" />
-                      <span>Rainfall: <strong className="text-slate-200">{report.rainfall_mm_forecast ? `${report.rainfall_mm_forecast} mm` : '0 mm'}</strong></span>
+                    <div className="flex items-center gap-1.5">
+                      <CloudRain className="w-3 h-3 text-[#157A70]" />
+                      <span>Rainfall: <strong className="text-[#17191C]">{report.rainfall_mm_forecast ? `${report.rainfall_mm_forecast} mm` : '0 mm'}</strong></span>
                     </div>
                   </div>
 
                   <button
                     onClick={() => onSelectReport(report)}
-                    className="w-full py-1.5 px-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-md text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors shadow-sm"
+                    className="w-full py-1.5 px-3 bg-[#157A70] hover:bg-[#11685F] text-white rounded-lg text-xs font-medium flex items-center justify-center gap-1.5 transition-colors shadow-sm cursor-pointer"
                   >
-                    <Eye className="w-3.5 h-3.5" /> View Triage Details
+                    <Eye className="w-3.5 h-3.5" />
+                    <span>View Triage Details</span>
                   </button>
                 </div>
               </Popup>
