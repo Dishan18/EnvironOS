@@ -8,10 +8,18 @@ import json
 from typing import Any
 
 
+CORS_HEADERS = {
+    "Content-Type": "application/json",
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Headers": "Content-Type,Authorization,X-Requested-With",
+    "Access-Control-Allow-Methods": "GET,POST,PATCH,OPTIONS",
+}
+
+
 def respond(status_code: int, data: Any) -> dict:
     return {
         "statusCode": status_code,
-        "headers": {"Content-Type": "application/json"},
+        "headers": CORS_HEADERS,
         "body": json.dumps(data, default=str),
     }
 
@@ -22,7 +30,7 @@ def respond_error(status_code: int, message: str, details: Any = None) -> dict:
         body["details"] = details
     return {
         "statusCode": status_code,
-        "headers": {"Content-Type": "application/json"},
+        "headers": CORS_HEADERS,
         "body": json.dumps(body),
     }
 

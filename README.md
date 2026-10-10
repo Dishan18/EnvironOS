@@ -260,19 +260,70 @@ Generates pre-signed S3 POST payload for direct browser-to-S3 photo uploads.
 
 ---
 
-## Seeding Synthetic Demo Data
+---
 
-Once deployed, populate realistic test reports with Bangalore coordinates:
+## Frontend Development & Operation (Phase 3)
+
+The DrainGuard web client is built with React 19, Vite, TypeScript, Tailwind CSS, Leaflet, and Lucide React.
+
+### 1. Local Setup & Execution
 
 ```powershell
-python infrastructure\scripts\seed_demo.py https://{ApiId}.execute-api.ap-south-1.amazonaws.com/prod
+# Navigate to frontend and install dependencies
+cd frontend
+npm install
+
+# Configure environment (points to live AWS backend)
+Copy-Item .env.example .env.local
+
+# Start Vite dev server on http://localhost:5173
+npm run dev
+```
+
+### 2. Frontend Unit Tests & Build
+
+```powershell
+# Run Vitest component and API client test suite (12 tests)
+npm --prefix frontend run test
+
+# Compile production bundle
+npm --prefix frontend run build
+```
+
+---
+
+## AWS Amplify Hosting Deployment
+
+An `amplify.yml` build specification is provided in the repository root for AWS Amplify hosting.
+
+### Minimal AWS Console Deployment Steps
+
+1. Sign in to the **AWS Management Console** and navigate to **AWS Amplify** (`ap-south-1` or `us-east-1`).
+2. Select **Deploy an app** $\to$ **GitHub**.
+3. Choose the repository: `Dishan18/EnvironOS` and branch `phase-3-frontend` (or `master` once merged).
+4. In **Build Settings**, Amplify will automatically detect the root `amplify.yml`.
+5. Under **Advanced Settings** $\to$ **Environment variables**, set:
+   - `VITE_API_BASE_URL` = `https://m3sxthznac.execute-api.ap-south-1.amazonaws.com/prod`
+6. Click **Save and Deploy**.
+7. Once deployed, copy your Amplify domain (e.g. `https://main.xxxx.amplifyapp.com`).
+8. The backend's API Gateway CORS is already pre-configured with `Access-Control-Allow-Origin: *`, allowing your Amplify domain to communicate with the live backend immediately without additional stack redeployments!
+
+---
+
+## Seeding Synthetic Demo Data
+
+Populate realistic test reports with Bangalore coordinates:
+
+```powershell
+python infrastructure\scripts\seed_demo.py https://m3sxthznac.execute-api.ap-south-1.amazonaws.com/prod
 ```
 
 All seeded reports include `is_demo: true` and are safe to query or delete at any time.
 
 ---
 
-## Known Limitations & Next Steps
+## Known Limitations & Architecture Notes
 
-1. **Table Queries vs Scans**: `list_reports` currently uses a DynamoDB Scan filter, suitable for hackathon scale (<10,000 reports). In production, partition queries by GSI (`StatusCreatedAtIndex` and `PriorityIndex`) for high-volume read scale.
-2. **Phase 3 (Frontend)**: React + Leaflet client application will be connected to `VITE_API_BASE_URL` to visualize the risk-triage heat map and provide civic report submission forms.
+1. **Table Queries vs Scans**: `list_reports` currently uses a DynamoDB Scan filter, suitable for hackathon scale (<10,000 reports). In high-volume production, query directly by GSI (`StatusCreatedAtIndex` and `PriorityIndex`).
+2. **Open-Meteo Rate Limits**: Weather enrichment calls Open-Meteo's free tier with a 3-second timeout and gracefully falls back to default seasonal risk scores if the weather API is unreachable or rate-limited.
+

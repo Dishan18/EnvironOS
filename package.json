@@ -3,7 +3,10 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "test:backend": "pytest",
-    "test": "npm run test:backend"
+    "dev": "npm --prefix frontend run dev",
+    "build": "npm --prefix frontend run build",
+    "test:frontend": "npm --prefix frontend run test",
+    "test:backend": "backend\\.venv\\Scripts\\pytest",
+    "test": "npm run test:backend && npm run test:frontend"
   }
 }
