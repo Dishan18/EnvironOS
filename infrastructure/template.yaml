@@ -54,6 +54,62 @@ Resources:
           - Authorization
           - X-Requested-With
         MaxAge: 600
+      Auth:
+        DefaultAuthorizer: CognitoJwtAuthorizer
+        Authorizers:
+          CognitoJwtAuthorizer:
+            IdentitySource: "$request.header.Authorization"
+            JwtConfiguration:
+              issuer: !Sub "https://cognito-idp.${AWS::Region}.amazonaws.com/${CognitoUserPool}"
+              audience:
+                - !Ref CognitoUserPoolClient
+
+  # ── Cognito Authentication Resources ─────────────────────────────────────
+  CognitoUserPool:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      UserPoolName: !Sub "drainguard-users-${Stage}"
+      AdminCreateUserConfig:
+        AllowAdminCreateUserOnly: false
+      AutoVerifiedAttributes:
+        - email
+      UsernameAttributes:
+        - email
+      UsernameConfiguration:
+        CaseSensitive: false
+      Policies:
+        PasswordPolicy:
+          MinimumLength: 5
+          RequireLowercase: false
+          RequireNumbers: false
+          RequireSymbols: false
+          RequireUppercase: false
+
+  CognitoUserPoolClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      ClientName: !Sub "drainguard-web-${Stage}"
+      UserPoolId: !Ref CognitoUserPool
+      GenerateSecret: false
+      ExplicitAuthFlows:
+        - ALLOW_USER_PASSWORD_AUTH
+        - ALLOW_USER_SRP_AUTH
+        - ALLOW_REFRESH_TOKEN_AUTH
+      PreventUserExistenceErrors: ENABLED
+
+  CognitoAdminGroup:
+    Type: AWS::Cognito::UserPoolGroup
+    Properties:
+      GroupName: admin
+      UserPoolId: !Ref CognitoUserPool
+      Description: Administrator role with status-transition and triage dispatch permissions
+
+  CognitoUserGroup:
+    Type: AWS::Cognito::UserPoolGroup
+    Properties:
+      GroupName: user
+      UserPoolId: !Ref CognitoUserPool
+      Description: Standard citizen reporter with report submission and viewing permissions
 
   # ── Lambda Functions ────────────────────────────────────────────────────
 
@@ -71,6 +127,8 @@ Resources:
             ApiId: !Ref DrainGuardApi
             Path: /health
             Method: GET
+            Auth:
+              Authorizer: NONE
 
   ListReportsFunction:
     Type: AWS::Serverless::Function
@@ -93,6 +151,8 @@ Resources:
             ApiId: !Ref DrainGuardApi
             Path: /reports
             Method: GET
+            Auth:
+              Authorizer: CognitoJwtAuthorizer
 
   CreateReportFunction:
     Type: AWS::Serverless::Function
@@ -112,6 +172,8 @@ Resources:
             ApiId: !Ref DrainGuardApi
             Path: /reports
             Method: POST
+            Auth:
+              Authorizer: CognitoJwtAuthorizer
 
   UpdateStatusFunction:
     Type: AWS::Serverless::Function
@@ -130,6 +192,8 @@ Resources:
             ApiId: !Ref DrainGuardApi
             Path: /reports/{id}/status
             Method: PATCH
+            Auth:
+              Authorizer: CognitoJwtAuthorizer
 
   PresignFunction:
     Type: AWS::Serverless::Function
@@ -151,6 +215,8 @@ Resources:
             ApiId: !Ref DrainGuardApi
             Path: /uploads/presign
             Method: POST
+            Auth:
+              Authorizer: CognitoJwtAuthorizer
 
   # ── DynamoDB Table ──────────────────────────────────────────────────────
   ReportsTable:
@@ -234,3 +300,15 @@ Outputs:
     Value: !Ref ReportsTable
     Export:
       Name: DrainGuardReportsTable
+
+  CognitoUserPoolId:
+    Description: Cognito User Pool ID
+    Value: !Ref CognitoUserPool
+    Export:
+      Name: DrainGuardUserPoolId
+
+  CognitoUserPoolClientId:
+    Description: Cognito App Client ID for React SPA
+    Value: !Ref CognitoUserPoolClient
+    Export:
+      Name: DrainGuardUserPoolClientId

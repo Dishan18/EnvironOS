@@ -39,6 +39,19 @@ export interface ReportItem {
   updatedAt?: string;
   resolved_at?: string | null;
   resolvedAt?: string | null;
+  created_by?: string | null;
+  createdBy?: string | null;
+  updated_by?: string | null;
+  updatedBy?: string | null;
+}
+
+export type UserRole = 'admin' | 'user';
+
+export interface AuthUser {
+  username: string;
+  email: string;
+  role: UserRole;
+  sub: string;
 }
 
 export interface ListReportsResponse {

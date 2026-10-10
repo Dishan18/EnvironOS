@@ -53,12 +53,25 @@ def dynamo_table(aws_credentials):
         dc._table = dc._dynamodb.Table(TABLE_NAME)
 
 
-def _make_event(method="POST", body=None, path_params=None, query_params=None):
+def _make_event(method="POST", body=None, path_params=None, query_params=None, claims=None, include_auth=True):
+    req_context = {"http": {"method": method}}
+    if include_auth:
+        if claims is None:
+            claims = {
+                "sub": "user_mock_123",
+                "cognito:username": "admin@drainguard.demo",
+                "email": "admin@drainguard.demo",
+                "cognito:groups": ["admin"],
+            }
+        req_context["authorizer"] = {"jwt": {"claims": claims}}
+    elif claims:
+        req_context["authorizer"] = {"jwt": {"claims": claims}}
+
     return {
-        "requestContext": {"http": {"method": method}},
+        "requestContext": req_context,
         "pathParameters": path_params or {},
         "queryStringParameters": query_params or {},
-        "body": json.dumps(body) if body else None,
+        "body": json.dumps(body) if body is not None else None,
         "isBase64Encoded": False,
     }
 
@@ -220,10 +233,10 @@ class TestListReportsHandler:
 
 class TestUpdateStatusHandler:
 
-    def _seed_report(self, dynamo_table):
+    def _seed_report(self, dynamo_table, status="open"):
         dynamo_table.put_item(Item={
             "report_id": "rpt_status001",
-            "status": "open",
+            "status": status,
             "severity": "high",
             "site_type": "road",
             "risk_score": 80,
@@ -234,7 +247,7 @@ class TestUpdateStatusHandler:
 
     def test_update_to_in_progress(self, dynamo_table):
         from src.handlers.update_status import handler
-        self._seed_report(dynamo_table)
+        self._seed_report(dynamo_table, status="open")
         event = _make_event(
             method="PATCH",
             body={"status": "in_progress"},
@@ -245,7 +258,7 @@ class TestUpdateStatusHandler:
 
     def test_update_to_resolved_sets_resolved_at(self, dynamo_table):
         from src.handlers.update_status import handler
-        self._seed_report(dynamo_table)
+        self._seed_report(dynamo_table, status="in_progress")
         event = _make_event(
             method="PATCH",
             body={"status": "resolved"},
@@ -274,3 +287,184 @@ class TestUpdateStatusHandler:
         )
         resp = handler(event, None)
         assert resp["statusCode"] == 400
+
+
+# ── RBAC & Auth Security Tests ────────────────────────────────────────────────
+
+class TestAuthAndRbac:
+
+    def _seed(self, dynamo_table, report_id="rpt_rbac01", status="open"):
+        dynamo_table.put_item(Item={
+            "report_id": report_id,
+            "status": status,
+            "severity": "medium",
+            "site_type": "road",
+            "risk_score": 50,
+            "priority": "high",
+            "created_at": "2026-10-10T12:00:00+00:00",
+            "updated_at": "2026-10-10T12:00:00+00:00",
+        })
+
+    def test_unauthenticated_requests_fail_closed_401(self, dynamo_table):
+        """All protected routes must fail closed when auth claims are absent."""
+        from src.handlers.list_reports import handler as list_handler
+        from src.handlers.create_report import handler as create_handler
+        from src.handlers.update_status import handler as update_handler
+        from src.handlers.presign import handler as presign_handler
+
+        unauth_event = _make_event(include_auth=False)
+
+        assert list_handler(unauth_event, None)["statusCode"] == 401
+        assert create_handler(unauth_event, None)["statusCode"] == 401
+        assert update_handler(unauth_event, None)["statusCode"] == 401
+        assert presign_handler(unauth_event, None)["statusCode"] == 401
+
+    def test_normal_user_denied_status_update_403(self, dynamo_table):
+        """Standard user role without admin group cannot update status."""
+        from src.handlers.update_status import handler
+        self._seed(dynamo_table, "rpt_rbac01", "open")
+
+        user_claims = {
+            "sub": "user_id_999",
+            "cognito:username": "user@drainguard.demo",
+            "email": "user@drainguard.demo",
+            "cognito:groups": ["user"],
+        }
+        event = _make_event(
+            method="PATCH",
+            body={"status": "in_progress"},
+            path_params={"id": "rpt_rbac01"},
+            claims=user_claims,
+        )
+        resp = handler(event, None)
+        assert resp["statusCode"] == 403
+        body = json.loads(resp["body"])
+        assert "Forbidden" in body["error"]
+
+    def test_admin_allowed_forward_transition_open_to_in_progress(self, dynamo_table):
+        """Admin can advance open -> in_progress."""
+        from src.handlers.update_status import handler
+        self._seed(dynamo_table, "rpt_rbac02", "open")
+
+        admin_claims = {
+            "sub": "admin_id_111",
+            "cognito:username": "admin@drainguard.demo",
+            "email": "admin@drainguard.demo",
+            "cognito:groups": ["admin"],
+        }
+        event = _make_event(
+            method="PATCH",
+            body={"status": "in_progress"},
+            path_params={"id": "rpt_rbac02"},
+            claims=admin_claims,
+        )
+        resp = handler(event, None)
+        assert resp["statusCode"] == 200
+        body = json.loads(resp["body"])
+        assert body["status"] == "in_progress"
+        assert body.get("updated_by") == "admin@drainguard.demo"
+
+    def test_admin_allowed_forward_transition_in_progress_to_resolved(self, dynamo_table):
+        """Admin can advance in_progress -> resolved."""
+        from src.handlers.update_status import handler
+        self._seed(dynamo_table, "rpt_rbac03", "in_progress")
+
+        admin_claims = {
+            "sub": "admin_id_111",
+            "cognito:username": "admin@drainguard.demo",
+            "email": "admin@drainguard.demo",
+            "cognito:groups": ["admin"],
+        }
+        event = _make_event(
+            method="PATCH",
+            body={"status": "resolved"},
+            path_params={"id": "rpt_rbac03"},
+            claims=admin_claims,
+        )
+        resp = handler(event, None)
+        assert resp["statusCode"] == 200
+        body = json.loads(resp["body"])
+        assert body["status"] == "resolved"
+        assert body.get("resolved_at") is not None
+
+    def test_invalid_skip_transition_open_to_resolved_rejected_400(self, dynamo_table):
+        """Skipping directly from open -> resolved must be rejected."""
+        from src.handlers.update_status import handler
+        self._seed(dynamo_table, "rpt_rbac04", "open")
+
+        admin_claims = {"cognito:username": "admin@drainguard.demo", "cognito:groups": ["admin"]}
+        event = _make_event(
+            method="PATCH",
+            body={"status": "resolved"},
+            path_params={"id": "rpt_rbac04"},
+            claims=admin_claims,
+        )
+        resp = handler(event, None)
+        assert resp["statusCode"] == 400
+        body = json.loads(resp["body"])
+        assert "Invalid transition" in body["error"]
+
+    def test_backward_transition_in_progress_to_open_rejected_400(self, dynamo_table):
+        """Backward transition from in_progress -> open must be rejected."""
+        from src.handlers.update_status import handler
+        self._seed(dynamo_table, "rpt_rbac05", "in_progress")
+
+        admin_claims = {"cognito:username": "admin@drainguard.demo", "cognito:groups": ["admin"]}
+        event = _make_event(
+            method="PATCH",
+            body={"status": "open"},
+            path_params={"id": "rpt_rbac05"},
+            claims=admin_claims,
+        )
+        resp = handler(event, None)
+        assert resp["statusCode"] == 400
+        body = json.loads(resp["body"])
+        assert "Invalid transition" in body["error"]
+
+    def test_transition_from_resolved_status_rejected_400(self, dynamo_table):
+        """Resolved reports cannot be changed."""
+        from src.handlers.update_status import handler
+        self._seed(dynamo_table, "rpt_rbac06", "resolved")
+
+        admin_claims = {"cognito:username": "admin@drainguard.demo", "cognito:groups": ["admin"]}
+        event = _make_event(
+            method="PATCH",
+            body={"status": "open"},
+            path_params={"id": "rpt_rbac06"},
+            claims=admin_claims,
+        )
+        resp = handler(event, None)
+        assert resp["statusCode"] == 400
+
+    def test_created_by_attribution_persisted_in_report(self, dynamo_table):
+        """Report creation records the creator username in created_by."""
+        from src.handlers.create_report import handler as create_handler
+        from src.lib.dynamo_client import get_report
+
+        user_claims = {
+            "sub": "reporter_sub_777",
+            "cognito:username": "reporter@drainguard.demo",
+            "email": "reporter@drainguard.demo",
+            "cognito:groups": ["user"],
+        }
+        event = _make_event(
+            body={
+                "report_id": "rpt_attributed01",
+                "severity": "critical",
+                "site_type": "road",
+                "latitude": 12.9716,
+                "longitude": 77.5946,
+            },
+            claims=user_claims,
+        )
+        with patch("src.lib.weather.fetch_rainfall_mm", return_value=(None, "default")):
+            resp = create_handler(event, None)
+
+        assert resp["statusCode"] == 201
+        body = json.loads(resp["body"])
+        assert body["created_by"] == "reporter@drainguard.demo"
+
+        saved = get_report("rpt_attributed01")
+        assert saved is not None
+        assert saved["created_by"] == "reporter@drainguard.demo"
+

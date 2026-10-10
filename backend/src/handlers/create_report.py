@@ -14,6 +14,7 @@ from src.lib.validate import validate_create_report
 from src.lib.risk_score import calculate_risk_score
 from src.lib.weather import fetch_rainfall_mm
 from src.lib.dynamo_client import put_report
+from src.lib.auth_utils import extract_auth_claims, get_user_identifier
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -21,6 +22,11 @@ logger.setLevel(logging.INFO)
 
 def handler(event, context):
     try:
+        # Require authenticated user
+        claims = extract_auth_claims(event)
+        if not claims:
+            return respond_error(401, "Unauthorized: Authentication token required")
+
         body = parse_body(event)
         errors = validate_create_report(body)
         if errors:
@@ -80,13 +86,18 @@ def handler(event, context):
             "resolved_at":          None,
         }
 
+        created_by = get_user_identifier(claims)
+        if created_by:
+            item["created_by"] = created_by
+            item["createdBy"] = created_by
+
         # Strip None values (DynamoDB rejects explicit None for non-key attributes)
         item = {k: v for k, v in item.items() if v is not None}
 
         put_report(item)
-        logger.info("Created report %s score=%d priority=%s", report_id, risk.risk_score, risk.priority)
+        logger.info("Created report %s score=%d priority=%s created_by=%s", report_id, risk.risk_score, risk.priority, created_by)
 
-        return respond(201, {
+        resp_data = {
             "report_id":       report_id,
             "reportId":        report_id,
             "risk_score":      risk.risk_score,
@@ -95,7 +106,12 @@ def handler(event, context):
             "status":          "open",
             "explanation":     risk.explanation,
             "rainfall_source": risk.rainfall_source,
-        })
+        }
+        if created_by:
+            resp_data["created_by"] = created_by
+            resp_data["createdBy"] = created_by
+
+        return respond(201, resp_data)
 
     except Exception as exc:
         logger.exception("createReport error")

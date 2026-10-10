@@ -5,6 +5,8 @@ import { ReportMap } from './components/ReportMap';
 import { ReportList } from './components/ReportList';
 import { ReportDetail } from './components/ReportDetail';
 import { SubmitReportModal } from './components/SubmitReportModal';
+import { LoginModal } from './components/LoginModal';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import {
   Shield,
   ShieldAlert,
@@ -16,9 +18,12 @@ import {
   Database,
   Info,
   MapPin,
+  User,
+  LogOut,
 } from 'lucide-react';
 
-export const App: React.FC = () => {
+const AppInner: React.FC = () => {
+  const { user, role, isLoading: authLoading, signOut, isAuthenticated } = useAuth();
   const [reports, setReports] = useState<ReportItem[]>([]);
   const [selectedReport, setSelectedReport] = useState<ReportItem | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -64,8 +69,15 @@ export const App: React.FC = () => {
   }, [selectedReport]);
 
   useEffect(() => {
-    fetchReportsData();
-  }, []);
+    if (isAuthenticated) {
+      fetchReportsData();
+    } else {
+      setIsLoading(false);
+      getHealth()
+        .then(() => setApiHealth('ok'))
+        .catch(() => setApiHealth('error'));
+    }
+  }, [isAuthenticated, fetchReportsData]);
 
   // Handler when map point is picked
   const handleMapLocationPick = (coords: { lat: number; lng: number }) => {
@@ -139,15 +151,44 @@ export const App: React.FC = () => {
               <span>AWS ap-south-1</span>
             </div>
 
+            {/* Authenticated User & Role Badge */}
+            {isAuthenticated && user && (
+              <div
+                className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#E8F4F1] border border-[#157A70]/20 text-[11px] text-[#157A70]"
+                title={`Signed in as ${user.email} (${user.role})`}
+              >
+                {role === 'admin' ? (
+                  <Shield className="w-3.5 h-3.5 text-[#157A70]" />
+                ) : (
+                  <User className="w-3.5 h-3.5 text-[#157A70]" />
+                )}
+                <span className="font-semibold uppercase text-[10px] tracking-wider">{role}</span>
+                <span className="hidden xl:inline text-[11px] text-[#696F78] font-normal truncate max-w-[130px]">
+                  ({user.email})
+                </span>
+              </div>
+            )}
+
             {/* Refresh Button */}
             <button
               onClick={fetchReportsData}
-              disabled={isRefreshing}
-              className="p-2 rounded-xl bg-white hover:bg-[#F5F6F8] border border-[#E6E8EC] text-[#696F78] hover:text-[#17191C] transition-colors cursor-pointer"
+              disabled={isRefreshing || !isAuthenticated}
+              className="p-2 rounded-xl bg-white hover:bg-[#F5F6F8] border border-[#E6E8EC] text-[#696F78] hover:text-[#17191C] transition-colors cursor-pointer disabled:opacity-40"
               title="Refresh data from DynamoDB"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin text-[#157A70]' : ''}`} />
             </button>
+
+            {/* Sign Out Button */}
+            {isAuthenticated && (
+              <button
+                onClick={signOut}
+                className="p-2 rounded-xl bg-white hover:bg-[#FDF2F2] border border-[#E6E8EC] hover:border-[#D9383A]/30 text-[#696F78] hover:text-[#D9383A] transition-colors cursor-pointer"
+                title="Sign out of demonstration session"
+              >
+                <LogOut className="w-3.5 h-3.5" />
+              </button>
+            )}
 
             {/* Submit Blockage CTA */}
             <button
@@ -156,7 +197,8 @@ export const App: React.FC = () => {
                 setIsPickingLocation(false);
                 setIsSubmitModalOpen(true);
               }}
-              className="px-3 py-1.5 rounded-xl bg-[#157A70] hover:bg-[#11685F] text-white text-xs font-medium flex items-center gap-1.5 shadow-sm transition-all active:scale-[0.98] cursor-pointer"
+              disabled={!isAuthenticated}
+              className="px-3 py-1.5 rounded-xl bg-[#157A70] hover:bg-[#11685F] text-white text-xs font-medium flex items-center gap-1.5 shadow-sm transition-all active:scale-[0.98] cursor-pointer disabled:opacity-40"
             >
               <Plus className="w-3.5 h-3.5" />
               <span>Report Drain Blockage</span>
@@ -326,7 +368,19 @@ export const App: React.FC = () => {
           setIsPickingLocation(true);
         }}
       />
+
+      {/* ── Cognito Demonstration Authentication Modal ────────────────────── */}
+      <LoginModal isOpen={!isAuthenticated && !authLoading} />
     </div>
   );
 };
+
+export const App: React.FC = () => {
+  return (
+    <AuthProvider>
+      <AppInner />
+    </AuthProvider>
+  );
+};
+
 

@@ -8,12 +8,13 @@ import {
   UpdateStatusResponse,
   ReportStatus,
 } from '../types';
+import { getIdToken } from './auth';
 
 const RAW_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://m3sxthznac.execute-api.ap-south-1.amazonaws.com/prod';
 // Ensure no trailing slash
 export const API_BASE_URL = RAW_BASE_URL.replace(/\/+$/, '');
 
-class ApiError extends Error {
+export class ApiError extends Error {
   status: number;
   details?: unknown;
 
@@ -25,7 +26,19 @@ class ApiError extends Error {
   }
 }
 
-/** Check health / liveness of API Gateway and Lambda */
+async function getAuthHeaders(): Promise<Record<string, string>> {
+  try {
+    const token = await getIdToken();
+    if (token) {
+      return { Authorization: `Bearer ${token}` };
+    }
+  } catch {
+    // proceed without token
+  }
+  return {};
+}
+
+/** Check health / liveness of API Gateway and Lambda (public) */
 export async function getHealth(): Promise<{ status: string; timestamp: string }> {
   const res = await fetch(`${API_BASE_URL}/health`, {
     headers: { Accept: 'application/json' },
@@ -36,7 +49,7 @@ export async function getHealth(): Promise<{ status: string; timestamp: string }
   return res.json();
 }
 
-/** Fetch reports from DynamoDB via GET /reports */
+/** Fetch reports from DynamoDB via GET /reports (protected) */
 export async function getReports(options: {
   status?: ReportStatus;
   minPriority?: number;
@@ -53,9 +66,13 @@ export async function getReports(options: {
 
   const qs = params.toString();
   const url = `${API_BASE_URL}/reports${qs ? `?${qs}` : ''}`;
+  const authHeaders = await getAuthHeaders();
 
   const res = await fetch(url, {
-    headers: { Accept: 'application/json' },
+    headers: {
+      Accept: 'application/json',
+      ...authHeaders,
+    },
   });
 
   if (!res.ok) {
@@ -82,11 +99,13 @@ export async function getPresignedUpload(
   reportId: string,
   contentType: string
 ): Promise<PresignResponse> {
+  const authHeaders = await getAuthHeaders();
   const res = await fetch(`${API_BASE_URL}/uploads/presign`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       Accept: 'application/json',
+      ...authHeaders,
     },
     body: JSON.stringify({
       report_id: reportId,
@@ -150,11 +169,13 @@ export async function uploadImageToS3(
 
 /** Submit new drain blockage report to POST /reports */
 export async function createReport(payload: CreateReportPayload): Promise<CreateReportResponse> {
+  const authHeaders = await getAuthHeaders();
   const res = await fetch(`${API_BASE_URL}/reports`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       Accept: 'application/json',
+      ...authHeaders,
     },
     body: JSON.stringify(payload),
   });
@@ -189,11 +210,13 @@ export async function updateReportStatus(
     payload.verification_image_key = verificationKey;
   }
 
+  const authHeaders = await getAuthHeaders();
   const res = await fetch(`${API_BASE_URL}/reports/${encodeURIComponent(reportId)}/status`, {
     method: 'PATCH',
     headers: {
       'Content-Type': 'application/json',
       Accept: 'application/json',
+      ...authHeaders,
     },
     body: JSON.stringify(payload),
   });

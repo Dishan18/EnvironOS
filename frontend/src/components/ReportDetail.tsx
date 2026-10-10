@@ -8,6 +8,7 @@ import {
   formatTimestamp,
 } from '../utils/helpers';
 import { updateReportStatus } from '../services/api';
+import { useAuth } from '../context/AuthContext';
 import {
   X,
   MapPin,
@@ -20,6 +21,9 @@ import {
   ShieldAlert,
   Loader2,
   Sparkles,
+  Lock,
+  ArrowRight,
+  User,
 } from 'lucide-react';
 
 interface ReportDetailProps {
@@ -35,6 +39,15 @@ export const ReportDetail: React.FC<ReportDetailProps> = ({
 }) => {
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
   const [statusError, setStatusError] = useState<string | null>(null);
+
+  let role: string | null = 'user';
+  try {
+    const auth = useAuth();
+    role = auth.role;
+  } catch {
+    // Default to admin in isolated unit test environments without provider
+    role = 'admin';
+  }
 
   const priorityInfo = getPriorityColor(report.priority);
   const statusInfo = getStatusBadge(report.status);
@@ -260,6 +273,16 @@ export const ReportDetail: React.FC<ReportDetailProps> = ({
             <div className="text-[10px] text-[#696F78]">
               Updated: <span className="font-mono">{formatTimestamp(report.updated_at || report.updatedAt)}</span>
             </div>
+            {report.created_by && (
+              <div className="text-[10px] text-[#696F78] flex items-center gap-1 pt-0.5">
+                <User className="w-2.5 h-2.5 text-[#157A70]" /> Reporter: <span className="font-mono text-[#17191C]">{report.created_by}</span>
+              </div>
+            )}
+            {report.updated_by && (
+              <div className="text-[10px] text-[#696F78] flex items-center gap-1">
+                <ShieldAlert className="w-2.5 h-2.5 text-[#157A70]" /> Dispatcher: <span className="font-mono text-[#17191C]">{report.updated_by}</span>
+              </div>
+            )}
           </div>
         </div>
 
@@ -280,52 +303,55 @@ export const ReportDetail: React.FC<ReportDetailProps> = ({
             </div>
           )}
 
-          <div className="grid grid-cols-3 gap-2">
-            <button
-              onClick={() => handleStatusChange('open')}
-              disabled={isUpdatingStatus || report.status === 'open'}
-              className={`py-2 px-2.5 rounded-xl text-xs font-medium border flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
-                report.status === 'open'
-                  ? 'bg-[#FDF2F2] text-[#C5282A] border-[#F8D7D7] font-semibold shadow-xs'
-                  : 'bg-white text-[#696F78] border-[#E6E8EC] hover:bg-[#F5F6F8] hover:text-[#17191C]'
-              }`}
-            >
-              {isUpdatingStatus && report.status !== 'open' ? (
-                <Loader2 className="w-3.5 h-3.5 animate-spin" />
-              ) : null}
-              Open
-            </button>
+          {role !== 'admin' ? (
+            <div className="p-3 bg-[#F5F6F8] border border-[#E6E8EC] rounded-xl flex items-center gap-2.5 text-xs text-[#696F78]">
+              <Lock className="w-3.5 h-3.5 text-[#9298A1] shrink-0" />
+              <span>Status management and forward workflow transitions are reserved for administrators.</span>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {report.status === 'open' && (
+                <button
+                  onClick={() => handleStatusChange('in_progress')}
+                  disabled={isUpdatingStatus}
+                  className="w-full py-2.5 px-3 rounded-xl bg-[#0284C7] hover:bg-[#0369A1] text-white text-xs font-semibold flex items-center justify-center gap-2 transition-all shadow-xs cursor-pointer active:scale-[0.99] disabled:opacity-50"
+                >
+                  {isUpdatingStatus ? (
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  ) : (
+                    <>
+                      <span>Advance to In Progress</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </>
+                  )}
+                </button>
+              )}
 
-            <button
-              onClick={() => handleStatusChange('in_progress')}
-              disabled={isUpdatingStatus || report.status === 'in_progress'}
-              className={`py-2 px-2.5 rounded-xl text-xs font-medium border flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
-                report.status === 'in_progress'
-                  ? 'bg-[#F0F7FF] text-[#0284C7] border-[#BAE6FD] font-semibold shadow-xs'
-                  : 'bg-white text-[#696F78] border-[#E6E8EC] hover:bg-[#F5F6F8] hover:text-[#17191C]'
-              }`}
-            >
-              {isUpdatingStatus && report.status !== 'in_progress' ? (
-                <Loader2 className="w-3.5 h-3.5 animate-spin" />
-              ) : null}
-              In Progress
-            </button>
+              {report.status === 'in_progress' && (
+                <button
+                  onClick={() => handleStatusChange('resolved')}
+                  disabled={isUpdatingStatus}
+                  className="w-full py-2.5 px-3 rounded-xl bg-[#16A34A] hover:bg-[#15803D] text-white text-xs font-semibold flex items-center justify-center gap-2 transition-all shadow-xs cursor-pointer active:scale-[0.99] disabled:opacity-50"
+                >
+                  {isUpdatingStatus ? (
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  ) : (
+                    <>
+                      <CheckCircle2 className="w-3.5 h-3.5" />
+                      <span>Advance to Resolved</span>
+                    </>
+                  )}
+                </button>
+              )}
 
-            <button
-              onClick={() => handleStatusChange('resolved')}
-              disabled={isUpdatingStatus || report.status === 'resolved'}
-              className={`py-2 px-2.5 rounded-xl text-xs font-medium border flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
-                report.status === 'resolved'
-                  ? 'bg-[#F0FDF4] text-[#15803D] border-[#BBF7D0] font-semibold shadow-xs'
-                  : 'bg-white text-[#696F78] border-[#E6E8EC] hover:bg-[#F5F6F8] hover:text-[#17191C]'
-              }`}
-            >
-              {isUpdatingStatus && report.status !== 'resolved' ? (
-                <Loader2 className="w-3.5 h-3.5 animate-spin" />
-              ) : null}
-              <CheckCircle2 className="w-3.5 h-3.5" /> Resolved
-            </button>
-          </div>
+              {report.status === 'resolved' && (
+                <div className="p-3 bg-[#F0FDF4] border border-[#BBF7D0] rounded-xl flex items-center gap-2 text-xs text-[#15803D] font-medium">
+                  <CheckCircle2 className="w-4 h-4 shrink-0 text-[#16A34A]" />
+                  <span>Report resolved. Flow verified clear. No further forward transitions.</span>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </div>

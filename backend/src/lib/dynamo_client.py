@@ -40,6 +40,7 @@ def update_report_status(
     updated_at: str,
     resolved_at: Optional[str] = None,
     verification_key: Optional[str] = None,
+    updated_by: Optional[str] = None,
 ) -> None:
     """
     Update cleanup workflow status fields on an existing report.
@@ -60,6 +61,12 @@ def update_report_status(
         expr_names["#vk"] = "verification_key"
         expr_names["#vk2"] = "verificationKey"
         expr_values[":vk"] = verification_key
+
+    if updated_by:
+        update_expr += ", #ub = :ub, #ub2 = :ub"
+        expr_names["#ub"] = "updated_by"
+        expr_names["#ub2"] = "updatedBy"
+        expr_values[":ub"] = updated_by
 
     get_table().update_item(
         Key={"report_id": report_id},

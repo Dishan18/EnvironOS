@@ -1,4 +1,4 @@
-# DrainGuard ️
+# DrainGuard
 
 > **Amazon Environmental Hacks 2026 · Track 02: Heat and Water**
 > Preventive drain-maintenance and risk-triage platform.
@@ -7,18 +7,42 @@ DrainGuard empowers communities to report blocked storm drains and helps municip
 
 ---
 
+## Demo Login Credentials
+
+> **Security Warning**: These demonstration credentials are intentionally public and strictly suitable for shared Amazon Environmental Hacks 2026 hackathon demonstration. Do not reuse these passwords for real-world deployments.
+
+| Role | Username / Email | Password | Permissions Summary |
+|---|---|---|---|
+| **Demo Admin** | `admin@drainguard.demo` | `admin12345` | Full triage workspace: view reports, submit reports, upload photos, inspect S3 evidence, advance workflow status (`open -> in_progress`, `in_progress -> resolved`). |
+| **Demo User** | `user@drainguard.demo` | `12345` | Community reporter: view reports and map, submit new drain blockages with photo evidence, view server-calculated risk scores. Read-only status view (status updates denied). |
+
+### Role-Based Access Control (RBAC) Matrix
+
+| Action / Operation | API Endpoint | Public Access | Demo User (`user`) | Demo Admin (`admin`) |
+|---|---|:---:|:---:|:---:|
+| Operational Health Probe | `GET /health` | Yes | Yes | Yes |
+| Retrieve Reports & S3 Images | `GET /reports` | No | Yes | Yes |
+| Submit New Blockage | `POST /reports` | No | Yes (`created_by`) | Yes (`created_by`) |
+| S3 Presigned Upload Policy | `POST /uploads/presign` | No | Yes | Yes |
+| Advance Status (`open -> in_progress`) | `PATCH /reports/{id}/status` | No | Denied (403) | Allowed (`updated_by`) |
+| Advance Status (`in_progress -> resolved`) | `PATCH /reports/{id}/status` | No | Denied (403) | Allowed (`updated_by`) |
+| Invalid / Backward Status Changes | `PATCH /reports/{id}/status` | No | Denied (403) | Rejected (400) |
+
+---
+
 ## Architecture & Technology Stack
 
 | Layer | Technology | Details |
 |---|---|---|
+| **Authentication** *(Phase 4)* | Amazon Cognito User Pools | Managed user pool, public SPA app client, `admin` & `user` groups |
 | **Backend Runtime** | Python 3.11 on AWS Lambda | Modular handlers with typed lib components |
-| **API Gateway** | Amazon API Gateway (HTTP API v2) | Low-latency, built-in CORS configuration |
+| **API Gateway** | Amazon API Gateway (HTTP API v2) | JWT authorizer protecting reports endpoints, public health probe |
 | **Database** | Amazon DynamoDB | On-demand PAY_PER_REQUEST, GSIs for status & priority |
 | **Photo Storage** | Amazon S3 | Private bucket with secure pre-signed POST and GET URLs |
 | **Infrastructure as Code** | AWS SAM / CloudFormation | Declarative IaC, least-privilege IAM policies |
 | **Weather Enrichment** | Open-Meteo API | Free 24h precipitation query (graceful fallback) |
-| **Testing** | Pytest + Moto | 66 comprehensive unit tests with mocked AWS services |
-| **Frontend** *(Phase 3)* | React + Vite + TypeScript + Tailwind | Interactive Leaflet / OpenStreetMap triage map |
+| **Testing** | Pytest + Moto + Vitest | 74 backend tests and 22 frontend tests |
+| **Frontend** *(Phase 3 & 4)* | React + Vite + TypeScript + Tailwind | Minimalist iOS-inspired light theme with Cognito auth |
 
 ---
 
@@ -283,12 +307,43 @@ npm run dev
 ### 2. Frontend Unit Tests & Build
 
 ```powershell
-# Run Vitest component and API client test suite (12 tests)
+# Run Vitest component, RBAC, and API client test suite (22 tests)
 npm --prefix frontend run test
 
 # Compile production bundle
 npm --prefix frontend run build
 ```
+
+---
+
+## Cognito Authentication Deployment & Demo Account Provisioning
+
+### Required Deployment Sequence
+
+1. **Deploy SAM Infrastructure with Cognito**:
+   ```powershell
+   sam build -t infrastructure\template.yaml
+   sam deploy --config-file infrastructure\samconfig.toml
+   ```
+   Provisions `CognitoUserPool`, `CognitoUserPoolClient`, `CognitoAdminGroup`, `CognitoUserGroup`, and HTTP API `CognitoJwtAuthorizer`.
+
+2. **Provision Demonstration Accounts**:
+   Using the `CognitoUserPoolId` output from CloudFormation:
+   ```powershell
+   python infrastructure\scripts\provision_demo_users.py <COGNITO_USER_POOL_ID> ap-south-1
+   ```
+   Idempotently creates `admin@drainguard.demo` and `user@drainguard.demo`, sets permanent passwords, and assigns group memberships.
+
+3. **Configure Frontend Environment (`.env.local`)**:
+   ```bash
+   VITE_API_BASE_URL=https://<api-id>.execute-api.ap-south-1.amazonaws.com/prod
+   VITE_COGNITO_USER_POOL_ID=<COGNITO_USER_POOL_ID>
+   VITE_COGNITO_CLIENT_ID=<COGNITO_CLIENT_ID>
+   ```
+
+4. **Verify Both Roles**:
+   - Sign in as `admin@drainguard.demo` / `admin12345` and advance incident workflow.
+   - Sign in as `user@drainguard.demo` / `12345` and verify read-only status experience with active report creation.
 
 ---
 

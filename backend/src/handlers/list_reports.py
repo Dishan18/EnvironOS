@@ -10,6 +10,7 @@ import base64
 from src.lib.http_utils import respond, respond_error
 from src.lib.dynamo_client import list_reports
 from src.lib.s3_client import generate_presigned_get
+from src.lib.auth_utils import extract_auth_claims
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -17,6 +18,11 @@ logger.setLevel(logging.INFO)
 
 def handler(event, context):
     try:
+        # Require authenticated user
+        claims = extract_auth_claims(event)
+        if not claims:
+            return respond_error(401, "Unauthorized: Authentication token required")
+
         q = event.get("queryStringParameters") or {}
 
         status       = q.get("status")
