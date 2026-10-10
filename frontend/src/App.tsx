@@ -17,6 +17,7 @@ import {
   Layers,
   Database,
   Info,
+  MapPin,
 } from 'lucide-react';
 
 export const App: React.FC = () => {
@@ -280,6 +281,38 @@ export const App: React.FC = () => {
         </div>
       </main>
 
+      {/* ── Location Picking Overlay Banner ─────────────────────────────────── */}
+      {isPickingLocation && (
+        <aside
+          role="status"
+          aria-live="polite"
+          className="fixed top-20 left-1/2 -translate-x-1/2 z-[3000] bg-slate-900/95 backdrop-blur-md border-2 border-emerald-500 shadow-2xl shadow-emerald-950/80 px-5 py-3 rounded-2xl flex items-center gap-4 text-xs text-white animate-in fade-in slide-in-from-top-4 duration-200"
+        >
+          <div className="w-8 h-8 rounded-xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 shrink-0">
+            <MapPin className="w-4 h-4 animate-bounce" />
+          </div>
+          <div>
+            <div className="font-bold text-white flex items-center gap-2">
+              <span>Map Pin Selection Active</span>
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+            </div>
+            <div className="text-[11px] text-slate-400">
+              Click anywhere on the map to set drain blockage coordinates
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              setIsPickingLocation(false);
+              setIsSubmitModalOpen(true);
+            }}
+            className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-xs font-semibold border border-slate-700 transition-colors cursor-pointer"
+          >
+            Cancel / Back to Form
+          </button>
+        </aside>
+      )}
+
       {/* ── Report Submission Modal ─────────────────────────────────────────── */}
       <SubmitReportModal
         isOpen={isSubmitModalOpen}
@@ -290,6 +323,8 @@ export const App: React.FC = () => {
         onReportCreated={handleReportCreated}
         pickedCoords={pickedLocation}
         onStartMapPick={() => {
+          setSelectedReport(null);
+          setIsSubmitModalOpen(false);
           setIsPickingLocation(true);
         }}
       />

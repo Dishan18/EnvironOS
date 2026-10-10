@@ -58,13 +58,13 @@ function createCustomIcon(report: ReportItem, isSelected: boolean) {
 function createPickerIcon() {
   const html = `
     <div style="
-      background: #3b82f6;
+      background: #10b981;
       width: 32px;
       height: 32px;
       border-radius: 50% 50% 50% 0;
       transform: rotate(-45deg);
       border: 2px solid white;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.6);
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.6);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -124,13 +124,26 @@ function LocationPickerHandler({
   isPicking?: boolean;
   onPick?: (coords: { lat: number; lng: number }) => void;
 }) {
-  useMapEvents({
+  const map = useMapEvents({
     click(e) {
       if (isPicking && onPick) {
         onPick({ lat: Number(e.latlng.lat.toFixed(5)), lng: Number(e.latlng.lng.toFixed(5)) });
       }
     },
   });
+
+  useEffect(() => {
+    if (!map || typeof (map as any).getContainer !== 'function') return;
+    const container = (map as any).getContainer();
+    if (container) {
+      if (isPicking) {
+        container.style.cursor = 'crosshair';
+      } else {
+        container.style.cursor = '';
+      }
+    }
+  }, [isPicking, map]);
+
   return null;
 }
 
@@ -145,10 +158,16 @@ export const ReportMap: React.FC<ReportMapProps> = ({
   const defaultCenter: [number, number] = [12.9716, 77.5946]; // Bengaluru default
 
   return (
-    <div className="relative w-full h-full min-h-[420px] rounded-xl overflow-hidden border border-slate-800 bg-slate-950 shadow-2xl">
+    <div
+      className={`relative w-full h-full min-h-[420px] rounded-xl overflow-hidden border bg-slate-950 shadow-2xl transition-all duration-300 ${
+        isPickingLocation
+          ? 'border-emerald-500 ring-4 ring-emerald-500/20 shadow-emerald-500/10'
+          : 'border-slate-800'
+      }`}
+    >
       {/* Location Picker Banner overlay */}
       {isPickingLocation && (
-        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[1000] bg-blue-600/90 backdrop-blur-md text-white text-xs font-semibold px-4 py-2 rounded-full shadow-lg border border-blue-400/30 flex items-center gap-2 animate-bounce">
+        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[1000] bg-emerald-600/95 backdrop-blur-md text-white text-xs font-semibold px-4 py-2 rounded-full shadow-lg border border-emerald-400/30 flex items-center gap-2 pointer-events-none animate-pulse">
           <Navigation className="w-3.5 h-3.5" />
           Click anywhere on the map to set blockage coordinates
         </div>
@@ -223,8 +242,13 @@ export const ReportMap: React.FC<ReportMapProps> = ({
               key={report.report_id}
               position={[lat, lng]}
               icon={createCustomIcon(report, isSelected)}
+              interactive={!isPickingLocation}
               eventHandlers={{
-                click: () => onSelectReport(report),
+                click: () => {
+                  if (!isPickingLocation) {
+                    onSelectReport(report);
+                  }
+                },
               }}
             >
               <Popup>

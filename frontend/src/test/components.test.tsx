@@ -136,4 +136,55 @@ describe('Frontend UI Components', () => {
       expect(screen.getByText(/Please enter a valid latitude/i)).toBeInTheDocument();
     });
   });
+
+  it('SubmitReportModal triggers onStartMapPick without calling onClose when clicking Select Point on Map', () => {
+    const onStartMapPick = vi.fn();
+    const onClose = vi.fn();
+
+    render(
+      <SubmitReportModal
+        isOpen={true}
+        onClose={onClose}
+        onReportCreated={vi.fn()}
+        onStartMapPick={onStartMapPick}
+      />
+    );
+
+    const pickBtn = screen.getByRole('button', { name: /Select Point on Map/i });
+    fireEvent.click(pickBtn);
+
+    expect(onStartMapPick).toHaveBeenCalledTimes(1);
+    expect(onClose).not.toHaveBeenCalled();
+  });
+
+  it('SubmitReportModal updates coordinates and displays badge when pickedCoords prop is updated', () => {
+    const { rerender } = render(
+      <SubmitReportModal
+        isOpen={true}
+        onClose={vi.fn()}
+        onReportCreated={vi.fn()}
+        pickedCoords={null}
+        onStartMapPick={vi.fn()}
+      />
+    );
+
+    // Initial default coords
+    expect(screen.getByDisplayValue('12.9716')).toBeInTheDocument();
+
+    // Rerender with new picked coordinates from map
+    rerender(
+      <SubmitReportModal
+        isOpen={true}
+        onClose={vi.fn()}
+        onReportCreated={vi.fn()}
+        pickedCoords={{ lat: 13.0827, lng: 80.2707 }}
+        onStartMapPick={vi.fn()}
+      />
+    );
+
+    expect(screen.getByDisplayValue('13.0827')).toBeInTheDocument();
+    expect(screen.getByDisplayValue('80.2707')).toBeInTheDocument();
+    expect(screen.getByText(/Pin selected on map/i)).toBeInTheDocument();
+  });
 });
+
