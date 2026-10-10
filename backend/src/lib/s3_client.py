@@ -48,6 +48,7 @@ def generate_presigned_post(report_id: str, content_type: str) -> dict:
 
     return {
         "upload_url": response["url"],
+        "url": response["url"],
         "fields": response["fields"],
         "object_key": object_key,
         "expires_in": UPLOAD_EXPIRY,
