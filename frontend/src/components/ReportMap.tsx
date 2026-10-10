@@ -88,19 +88,21 @@ function MapController({
   selectedReport: ReportItem | null;
 }) {
   const map = useMap();
+  const selectedReportId = selectedReport?.report_id;
 
   useEffect(() => {
     if (selectedReport) {
       const lat = Number(selectedReport.latitude);
       const lng = Number(selectedReport.longitude);
       if (!isNaN(lat) && !isNaN(lng)) {
-        map.flyTo([lat, lng], 15, { duration: 1.2 });
+        map.flyTo([lat, lng], 15, { duration: 0.8 });
       }
     }
-  }, [selectedReport, map]);
+  }, [selectedReportId, map]);
 
+  const reportCount = reports.length;
   useEffect(() => {
-    if (!selectedReport && reports.length > 0) {
+    if (!selectedReportId && reportCount > 0) {
       const validCoords = reports
         .map((r) => [Number(r.latitude), Number(r.longitude)] as [number, number])
         .filter(([lat, lng]) => !isNaN(lat) && !isNaN(lng));
@@ -110,7 +112,7 @@ function MapController({
         map.fitBounds(bounds, { padding: [40, 40], maxZoom: 14 });
       }
     }
-  }, [reports, selectedReport, map]);
+  }, [reportCount, selectedReportId, map]);
 
   return null;
 }

@@ -53,11 +53,20 @@ const AppInner: React.FC = () => {
       const res = await getReports({ limit: 100 });
       setReports(res.items);
 
-      // If currently selected report exists, update its record
-      if (selectedReport) {
-        const found = res.items.find((r) => r.report_id === selectedReport.report_id);
-        if (found) setSelectedReport(found);
-      }
+      // If currently selected report exists, update its record without creating new reference if unchanged
+      setSelectedReport((prev) => {
+        if (!prev) return null;
+        const found = res.items.find((r) => r.report_id === prev.report_id);
+        if (!found) return prev;
+        if (
+          found.status === prev.status &&
+          found.updated_at === prev.updated_at &&
+          found.risk_score === prev.risk_score
+        ) {
+          return prev;
+        }
+        return found;
+      });
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Failed to connect to backend';
       setApiError(msg);
@@ -66,7 +75,7 @@ const AppInner: React.FC = () => {
       setIsLoading(false);
       setIsRefreshing(false);
     }
-  }, [selectedReport]);
+  }, []);
 
   useEffect(() => {
     if (isAuthenticated) {
