@@ -1,0 +1,5 @@
+boto3==1.35.36
+botocore==1.35.36
+nanoid==2.0.0
+requests==2.32.3
+urllib3==2.2.3

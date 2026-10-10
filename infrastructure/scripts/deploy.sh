@@ -14,6 +14,9 @@ sam build
 
 echo "==> Deploying to AWS (stage: $STAGE)..."
 sam deploy \
+  --stack-name drainguard \
+  --resolve-s3 \
+  --capabilities CAPABILITY_IAM \
   --parameter-overrides "Stage=$STAGE" \
   --no-confirm-changeset
 

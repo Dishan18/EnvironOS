@@ -22,15 +22,14 @@ Parameters:
 # ── Globals ───────────────────────────────────────────────────────────────────
 Globals:
   Function:
-    Runtime: nodejs22.x
-    Architectures: [arm64]          # Graviton2 — cheaper + faster cold-start
+    Runtime: python3.11
+    Architectures: [x86_64]
     MemorySize: 256
     Timeout: 15
     Environment:
       Variables:
         REPORTS_TABLE: !Ref ReportsTable
         UPLOADS_BUCKET: !Ref UploadsBucket
-        AWS_NODEJS_CONNECTION_REUSE_ENABLED: "1"
         PRESIGN_EXPIRY_SECONDS: "300"
         PRESIGN_GET_EXPIRY_SECONDS: "3600"
         ALLOWED_ORIGINS: !Ref AllowedOrigins
@@ -63,7 +62,7 @@ Resources:
     Properties:
       FunctionName: !Sub "drainguard-health-${Stage}"
       CodeUri: ../backend/
-      Handler: src/handlers/health.handler
+      Handler: src.handlers.health.handler
       Description: Liveness probe
       Events:
         HttpGet:
@@ -78,7 +77,7 @@ Resources:
     Properties:
       FunctionName: !Sub "drainguard-list-reports-${Stage}"
       CodeUri: ../backend/
-      Handler: src/handlers/listReports.handler
+      Handler: src.handlers.list_reports.handler
       Description: List drain-blockage reports with filters and pagination
       Policies:
         - DynamoDBReadPolicy:
@@ -100,7 +99,7 @@ Resources:
     Properties:
       FunctionName: !Sub "drainguard-create-report-${Stage}"
       CodeUri: ../backend/
-      Handler: src/handlers/createReport.handler
+      Handler: src.handlers.create_report.handler
       Description: Create a new drain-blockage report
       Timeout: 20   # extra time for Open-Meteo call
       Policies:
@@ -119,7 +118,7 @@ Resources:
     Properties:
       FunctionName: !Sub "drainguard-update-status-${Stage}"
       CodeUri: ../backend/
-      Handler: src/handlers/updateStatus.handler
+      Handler: src.handlers.update_status.handler
       Description: Update cleanup workflow status on a report
       Policies:
         - DynamoDBCrudPolicy:
@@ -137,7 +136,7 @@ Resources:
     Properties:
       FunctionName: !Sub "drainguard-presign-${Stage}"
       CodeUri: ../backend/
-      Handler: src/handlers/presign.handler
+      Handler: src.handlers.presign.handler
       Description: Generate presigned S3 POST URL for direct browser upload
       Policies:
         - Statement:
@@ -160,23 +159,23 @@ Resources:
       TableName: DrainGuardReports
       BillingMode: PAY_PER_REQUEST
       AttributeDefinitions:
-        - AttributeName: reportId
+        - AttributeName: report_id
           AttributeType: S
         - AttributeName: status
           AttributeType: S
-        - AttributeName: createdAt
+        - AttributeName: created_at
           AttributeType: S
-        - AttributeName: priorityScore
+        - AttributeName: risk_score
           AttributeType: N
       KeySchema:
-        - AttributeName: reportId
+        - AttributeName: report_id
           KeyType: HASH
       GlobalSecondaryIndexes:
         - IndexName: StatusCreatedAtIndex
           KeySchema:
             - AttributeName: status
               KeyType: HASH
-            - AttributeName: createdAt
+            - AttributeName: created_at
               KeyType: RANGE
           Projection:
             ProjectionType: ALL
@@ -184,7 +183,7 @@ Resources:
           KeySchema:
             - AttributeName: status
               KeyType: HASH
-            - AttributeName: priorityScore
+            - AttributeName: risk_score
               KeyType: RANGE
           Projection:
             ProjectionType: ALL
