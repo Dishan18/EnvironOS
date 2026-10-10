@@ -31,7 +31,7 @@ DEMO_ACCOUNTS = [
     {
         "username": "user@drainguard.demo",
         "email": "user@drainguard.demo",
-        "password": "12345",
+        "password": "user12345",
         "group": "user",
         "role_label": "Demo Community User",
     },

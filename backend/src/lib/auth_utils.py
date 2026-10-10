@@ -37,14 +37,15 @@ def get_user_groups(claims: dict[str, Any]) -> list[str]:
     Handles multiple serialization formats:
     - list: ['admin'] or ['user']
     - JSON string: '["admin"]'
+    - API Gateway HTTP API bracketed string: '[admin]' or '[admin, user]'
     - comma/space separated: 'admin,user'
     """
-    raw_groups = claims.get("cognito:groups") or claims.get("groups")
+    raw_groups = claims.get("cognito:groups") or claims.get("groups") or claims.get("cognito:roles")
     if not raw_groups:
         return []
 
     if isinstance(raw_groups, list):
-        return [str(g).strip() for g in raw_groups if str(g).strip()]
+        return [str(g).strip("[]\"' ") for g in raw_groups if str(g).strip("[]\"' ")]
 
     if isinstance(raw_groups, str):
         raw_groups = raw_groups.strip()
@@ -52,12 +53,13 @@ def get_user_groups(claims: dict[str, Any]) -> list[str]:
             try:
                 parsed = json.loads(raw_groups)
                 if isinstance(parsed, list):
-                    return [str(g).strip() for g in parsed if str(g).strip()]
+                    return [str(g).strip("[]\"' ") for g in parsed if str(g).strip("[]\"' ")]
             except Exception:
                 pass
-        if "," in raw_groups:
-            return [g.strip() for g in raw_groups.split(",") if g.strip()]
-        return [g.strip() for g in raw_groups.split() if g.strip()]
+        cleaned = raw_groups.strip("[] ")
+        if "," in cleaned:
+            return [g.strip("[]\"' ") for g in cleaned.split(",") if g.strip("[]\"' ")]
+        return [g.strip("[]\"' ") for g in cleaned.split() if g.strip("[]\"' ")]
 
     return []
 

@@ -14,7 +14,7 @@ DrainGuard empowers communities to report blocked storm drains and helps municip
 | Role | Username / Email | Password | Permissions Summary |
 |---|---|---|---|
 | **Demo Admin** | `admin@drainguard.demo` | `admin12345` | Full triage workspace: view reports, submit reports, upload photos, inspect S3 evidence, advance workflow status (`open -> in_progress`, `in_progress -> resolved`). |
-| **Demo User** | `user@drainguard.demo` | `12345` | Community reporter: view reports and map, submit new drain blockages with photo evidence, view server-calculated risk scores. Read-only status view (status updates denied). |
+| **Demo User** | `user@drainguard.demo` | `user12345` | Community reporter: view reports and map, submit new drain blockages with photo evidence, view server-calculated risk scores. Read-only status view (status updates denied). |
 
 ### Role-Based Access Control (RBAC) Matrix
 
@@ -343,7 +343,7 @@ npm --prefix frontend run build
 
 4. **Verify Both Roles**:
    - Sign in as `admin@drainguard.demo` / `admin12345` and advance incident workflow.
-   - Sign in as `user@drainguard.demo` / `12345` and verify read-only status experience with active report creation.
+   - Sign in as `user@drainguard.demo` / `user12345` and verify read-only status experience with active report creation.
 
 ---
 

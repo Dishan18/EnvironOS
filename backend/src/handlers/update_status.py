@@ -26,7 +26,9 @@ def handler(event, context):
             return respond_error(401, "Unauthorized: Authentication token required")
 
         # 2. Enforce admin role strictly on the backend
-        if not is_admin(claims):
+        admin_flag = is_admin(claims)
+        logger.info("update_status check: claims=%s, is_admin=%s", claims, admin_flag)
+        if not admin_flag:
             return respond_error(403, "Forbidden: Admin privileges required to update report status")
 
         # 3. Path parameter validation

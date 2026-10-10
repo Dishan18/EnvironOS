@@ -147,12 +147,12 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen }) => {
 
             <button
               type="button"
-              onClick={() => handleFillDemo('user@drainguard.demo', '12345')}
+              onClick={() => handleFillDemo('user@drainguard.demo', 'user12345')}
               className="p-2.5 rounded-xl border border-[#E6E8EC] hover:border-[#157A70] hover:bg-[#E8F4F1]/40 text-left transition-all cursor-pointer group"
             >
               <div className="text-[11px] font-bold text-[#17191C] group-hover:text-[#157A70]">Demo User</div>
               <div className="text-[10px] text-[#696F78]">Role: user</div>
-              <div className="text-[10px] font-mono text-[#9298A1] mt-0.5">12345</div>
+              <div className="text-[10px] font-mono text-[#9298A1] mt-0.5">user12345</div>
             </button>
           </div>
 
