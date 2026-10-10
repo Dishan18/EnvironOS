@@ -117,10 +117,15 @@ export async function uploadImageToS3(
   reportId: string
 ): Promise<string> {
   const presignData = await getPresignedUpload(reportId, file.type);
-  const uploadUrl = presignData.upload_url || presignData.url;
+  let uploadUrl = presignData.upload_url || presignData.url;
 
   if (!uploadUrl) {
     throw new Error('Upload URL missing from presign response');
+  }
+
+  // Ensure regional S3 endpoint (s3.ap-south-1.amazonaws.com) to prevent cross-origin 307 redirects
+  if (uploadUrl.includes('.s3.amazonaws.com') && !uploadUrl.includes('.s3.ap-south-1.amazonaws.com')) {
+    uploadUrl = uploadUrl.replace('.s3.amazonaws.com', '.s3.ap-south-1.amazonaws.com');
   }
 
   const formData = new FormData();

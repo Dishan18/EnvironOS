@@ -10,14 +10,14 @@ from botocore.exceptions import ClientError
 from typing import Optional
 
 BUCKET = os.environ.get("UPLOADS_BUCKET", "")
-REGION = os.environ.get("AWS_REGION", "us-east-1")
+REGION = os.environ.get("AWS_REGION") or os.environ.get("AWS_DEFAULT_REGION") or "ap-south-1"
 UPLOAD_EXPIRY = int(os.environ.get("PRESIGN_EXPIRY_SECONDS", "300"))
 GET_EXPIRY = int(os.environ.get("PRESIGN_GET_EXPIRY_SECONDS", "3600"))
 
 ALLOWED_CONTENT_TYPES = {"image/jpeg", "image/png", "image/webp"}
 MAX_SIZE_BYTES = 5 * 1024 * 1024  # 5 MB
 
-_s3_client = boto3.client("s3", region_name=REGION)
+_s3_client = boto3.client("s3", region_name=REGION, endpoint_url=f"https://s3.{REGION}.amazonaws.com")
 
 
 def get_s3_client():
@@ -46,9 +46,13 @@ def generate_presigned_post(report_id: str, content_type: str) -> dict:
         ExpiresIn=UPLOAD_EXPIRY,
     )
 
+    upload_url = response["url"]
+    if ".s3.amazonaws.com" in upload_url and f".s3.{REGION}.amazonaws.com" not in upload_url:
+        upload_url = upload_url.replace(".s3.amazonaws.com", f".s3.{REGION}.amazonaws.com")
+
     return {
-        "upload_url": response["url"],
-        "url": response["url"],
+        "upload_url": upload_url,
+        "url": upload_url,
         "fields": response["fields"],
         "object_key": object_key,
         "expires_in": UPLOAD_EXPIRY,
