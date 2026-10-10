@@ -14,7 +14,7 @@ Parameters:
 
   AllowedOrigins:
     Type: String
-    Default: "http://localhost:5173"
+    Default: "http://localhost:5173,http://localhost:5174,http://localhost:5175,*"
     Description: >
       Comma-separated list of allowed CORS origins.
       Update after Amplify deployment to include the Amplify HTTPS URL.
